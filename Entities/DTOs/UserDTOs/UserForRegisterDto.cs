@@ -1,0 +1,20 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace BabsKitapEvi.Entities.DTOs.UserDTOs
+{
+    public sealed class UserForRegisterDto
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = null!;
+
+        [Required]
+        public string Password { get; set; } = null!;
+
+        [Required]
+        public string FirstName { get; set; } = null!;
+
+        [Required]
+        public string LastName { get; set; } = null!;
+    }
+}

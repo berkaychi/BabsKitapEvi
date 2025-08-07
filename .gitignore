@@ -1,0 +1,57 @@
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+plan/
+
+# Keep plan folder and all Markdown files ignored as requested
+/plan
+
+# Dotnet build outputs
+[Bb]in/
+[Oo]bj/
+
+# IDE settings
+.vs/
+.idea/
+.vscode/
+
+# User-specific files
+*.user
+*.suo
+
+# Build logs and test outputs
+TestResult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+Coverage*/
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+# NuGet cache and generated props/targets
+**/project.nuget.cache
+**/*.csproj.nuget.dgspec.json
+**/*.csproj.nuget.g.props
+**/*.csproj.nuget.g.targets
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# ASP.NET local settings
+appsettings.Development.json
+
+# Launch profiles (keep if you want to commit them; commonly ignored in teams)
+# Properties/launchSettings.json
+
+# Rider/Resharper caches
+_ReSharper.Caches/
+*.DotSettings.user
+
+# Other OS artifacts
+.DS_Store
+Thumbs.db

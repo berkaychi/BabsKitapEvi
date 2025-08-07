@@ -1,0 +1,6 @@
+@BabsKitapEvi.WebAPI_HostAddress = http://localhost:5198
+
+GET {{BabsKitapEvi.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

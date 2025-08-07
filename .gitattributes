@@ -1,0 +1,37 @@
+# Normalize line endings: store LF in repo, checkout CRLF on Windows
+* text=auto
+
+# Treat common text files as text
+*.cs text
+*.csproj text
+*.sln text
+*.json text
+*.yml text
+*.yaml text
+*.xml text
+*.md text
+*.ts text
+*.js text
+*.css text
+*.scss text
+*.html text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.7z binary
+*.exe binary
+*.dll binary
+*.pdb binary
+*.snk binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+
+# GitHub linguist hints (optional)
+*.cs linguist-language=C#

@@ -62,7 +62,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
+
+builder.Services.AddScoped<IImageUploadService, CloudinaryImageManager>();
 builder.Services.AddScoped<IAuthService, AuthManager>();
 builder.Services.AddScoped<IBookService, BookManager>();
 builder.Services.AddScoped<IUserService, UserManager>();
@@ -80,11 +83,11 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
+        Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "JWT token'ınızı giriniz. Örnek: Bearer 12345abcdef"
+        Description = "JWT token'ınızı giriniz. Örnek: 12345abcdef"
     });
 
     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement

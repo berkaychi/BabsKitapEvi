@@ -16,7 +16,6 @@
 *.scss text
 *.html text
 
-# Binary files
 *.png binary
 *.jpg binary
 *.jpeg binary
@@ -33,5 +32,4 @@
 *.woff binary
 *.woff2 binary
 
-# GitHub linguist hints (optional)
 *.cs linguist-language=C#

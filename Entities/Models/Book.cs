@@ -9,6 +9,7 @@ namespace BabsKitapEvi.Entities.Models
         public DateTime PublishedDate { get; set; }
         public string? Description { get; set; } = null!;
         public string? ImageUrl { get; set; }
+        public string? ImagePublicId { get; set; }
         public int StockQuantity { get; set; }
         public decimal Price { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

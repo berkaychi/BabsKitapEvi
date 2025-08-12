@@ -1,4 +1,5 @@
 using BabsKitapEvi.Entities.DTOs.UserDTOs;
+using BabsKitapEvi.Entities.Models;
 using TS.Result;
 
 namespace BabsKitapEvi.Business.Interfaces

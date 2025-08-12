@@ -3,7 +3,6 @@ using BabsKitapEvi.Entities.DTOs.BookDTOs;
 using BabsKitapEvi.Entities.Static;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace BabsKitapEvi.WebAPI.Controllers
 {
@@ -11,10 +10,12 @@ namespace BabsKitapEvi.WebAPI.Controllers
     public sealed class BooksController : CustomBaseController
     {
         private readonly IBookService _bookService;
+        private readonly IImageUploadService _imageUploadService;
 
-        public BooksController(IBookService bookService)
+        public BooksController(IBookService bookService, IImageUploadService imageUploadService)
         {
             _bookService = bookService;
+            _imageUploadService = imageUploadService;
         }
 
         [HttpGet]
@@ -22,6 +23,14 @@ namespace BabsKitapEvi.WebAPI.Controllers
         public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _bookService.GetAllAsync(pageNumber, pageSize);
+            return CreateActionResult(result);
+        }
+
+        [HttpGet("category/{categoryId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetCategoryBooks(int categoryId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _bookService.GetByCategoryIdAsync(categoryId, pageNumber, pageSize);
             return CreateActionResult(result);
         }
 
@@ -35,25 +44,64 @@ namespace BabsKitapEvi.WebAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Create([FromBody] CreateBookDto createBookDto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Create([FromForm] CreateBookDto createBookDto, IFormFile? imageFile, CancellationToken ct)
         {
-            var result = await _bookService.CreateAsync(createBookDto);
+            string? imageUrl = null;
+            string? imagePublicId = null;
+            if (imageFile is { Length: > 0 })
+            {
+                using var stream = imageFile.OpenReadStream();
+                var upload = await _imageUploadService.UploadImageAsync(stream, imageFile.FileName, imageFile.ContentType, "babs-kitap-evi/books", ct);
+                if (upload != null)
+                {
+                    imageUrl = upload.Url;
+                    imagePublicId = upload.PublicId;
+                }
+            }
+
+            var result = await _bookService.CreateAsync(createBookDto, imageUrl, imagePublicId, ct);
             return CreateActionResult(result);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateBookDto updateBookDto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateBookDto updateBookDto, CancellationToken ct)
         {
-            var result = await _bookService.UpdateAsync(id, updateBookDto);
+            var result = await _bookService.UpdateAsync(id, updateBookDto, null, null, ct);
+            return CreateActionResult(result);
+        }
+
+        [HttpPut("{id}/image")]
+        [Authorize(Roles = Roles.Admin)]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateImage(int id, IFormFile imageFile, CancellationToken ct)
+        {
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                return BadRequest("Image file is required.");
+            }
+
+            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+            if (!allowedTypes.Contains(imageFile.ContentType.ToLower()))
+            {
+                return BadRequest("Invalid image type. Allowed types are: jpeg, jpg, png, gif, webp.");
+            }
+
+            if (imageFile.Length > 5 * 1024 * 1024)
+            {
+                return BadRequest("File size cannot exceed 5MB.");
+            }
+
+            var result = await _bookService.UpdateImageAsync(id, imageFile, ct);
             return CreateActionResult(result);
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
-            var result = await _bookService.DeleteAsync(id);
+            var result = await _bookService.DeleteAsync(id, ct);
             return CreateActionResult(result);
         }
     }

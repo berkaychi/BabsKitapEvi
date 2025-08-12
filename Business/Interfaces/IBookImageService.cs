@@ -1,5 +1,5 @@
-using BabsKitapEvi.Entities.DTOs.BookDTOs;
-using BabsKitapEvi.Entities.DTOs.Shared;
+using BabsKitapEvi.Common.DTOs.BookDTOs;
+using BabsKitapEvi.Common.DTOs.Shared;
 using Microsoft.AspNetCore.Http;
 using TS.Result;
 

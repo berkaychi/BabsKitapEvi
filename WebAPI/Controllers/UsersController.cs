@@ -1,5 +1,5 @@
 using BabsKitapEvi.Business.Interfaces;
-using BabsKitapEvi.Entities.DTOs.UserDTOs;
+using BabsKitapEvi.Common.DTOs.UserDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

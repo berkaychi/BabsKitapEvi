@@ -1,5 +1,5 @@
-using BabsKitapEvi.Entities.DTOs.AuthDTOs;
-using BabsKitapEvi.Entities.DTOs.UserDTOs;
+using BabsKitapEvi.Common.DTOs.AuthDTOs;
+using BabsKitapEvi.Common.DTOs.UserDTOs;
 using BabsKitapEvi.Entities.Models;
 using TS.Result;
 

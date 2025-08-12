@@ -11,6 +11,8 @@ using BabsKitapEvi.Business.Services;
 using BabsKitapEvi.Business.Mappings;
 using BabsKitapEvi.Entities.Models;
 using Microsoft.OpenApi.Models;
+using FluentValidation;
+using BabsKitapEvi.Business.Validators.Book;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,7 +66,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
-
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateBookImageDtoValidator>();
 builder.Services.AddScoped<IImageUploadService, CloudinaryImageManager>();
 builder.Services.AddScoped<IAuthService, AuthManager>();
 builder.Services.AddScoped<IBookService, BookManager>();

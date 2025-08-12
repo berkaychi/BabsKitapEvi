@@ -10,8 +10,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using BabsKitapEvi.Entities.DTOs.UserDTOs;
-using BabsKitapEvi.Entities.DTOs.AuthDTOs;
+using BabsKitapEvi.Common.DTOs.UserDTOs;
+using BabsKitapEvi.Common.DTOs.AuthDTOs;
 using TS.Result;
 
 namespace BabsKitapEvi.Business.Services

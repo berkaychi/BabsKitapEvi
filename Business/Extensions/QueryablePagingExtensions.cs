@@ -1,4 +1,4 @@
-using BabsKitapEvi.Entities.DTOs.Shared;
+using BabsKitapEvi.Common.DTOs.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace BabsKitapEvi.Business.Extensions

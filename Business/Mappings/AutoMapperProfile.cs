@@ -1,10 +1,10 @@
 using AutoMapper;
 using BabsKitapEvi.Entities.Models;
-using BabsKitapEvi.Entities.DTOs.BookDTOs;
-using BabsKitapEvi.Entities.DTOs.UserDTOs;
-using BabsKitapEvi.Entities.DTOs.AuthDTOs;
-using BabsKitapEvi.Entities.DTOs.CategoryDTOs;
-using BabsKitapEvi.Entities.DTOs.CartDTOs;
+using BabsKitapEvi.Common.DTOs.BookDTOs;
+using BabsKitapEvi.Common.DTOs.UserDTOs;
+using BabsKitapEvi.Common.DTOs.AuthDTOs;
+using BabsKitapEvi.Common.DTOs.CategoryDTOs;
+using BabsKitapEvi.Common.DTOs.CartDTOs;
 
 namespace BabsKitapEvi.Business.Mappings
 {

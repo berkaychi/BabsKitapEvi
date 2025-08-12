@@ -1,4 +1,4 @@
-using BabsKitapEvi.Entities.DTOs.CategoryDTOs;
+using BabsKitapEvi.Common.DTOs.CategoryDTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TS.Result;

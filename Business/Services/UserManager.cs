@@ -1,6 +1,6 @@
 using AutoMapper;
 using BabsKitapEvi.Business.Interfaces;
-using BabsKitapEvi.Entities.DTOs.UserDTOs;
+using BabsKitapEvi.Common.DTOs.UserDTOs;
 using BabsKitapEvi.Entities.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

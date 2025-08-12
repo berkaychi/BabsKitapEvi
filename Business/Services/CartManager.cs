@@ -1,7 +1,7 @@
 using AutoMapper;
 using BabsKitapEvi.Business.Interfaces;
 using BabsKitapEvi.DataAccess;
-using BabsKitapEvi.Entities.DTOs.CartDTOs;
+using BabsKitapEvi.Common.DTOs.CartDTOs;
 using BabsKitapEvi.Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;

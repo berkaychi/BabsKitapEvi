@@ -1,6 +1,6 @@
 using System.IO;
 using System.Threading;
-using BabsKitapEvi.Entities.DTOs.Shared;
+using BabsKitapEvi.Common.DTOs.Shared;
 
 namespace BabsKitapEvi.Business.Interfaces
 {

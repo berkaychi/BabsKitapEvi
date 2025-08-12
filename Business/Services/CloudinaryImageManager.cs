@@ -1,5 +1,5 @@
 using BabsKitapEvi.Business.Interfaces;
-using BabsKitapEvi.Entities.DTOs.Shared;
+using BabsKitapEvi.Common.DTOs.Shared;
 using BabsKitapEvi.Entities.Models;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;

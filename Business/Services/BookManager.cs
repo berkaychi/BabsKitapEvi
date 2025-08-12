@@ -2,7 +2,7 @@ using AutoMapper;
 using BabsKitapEvi.DataAccess;
 using BabsKitapEvi.Entities.Models;
 using BabsKitapEvi.Business.Interfaces;
-using BabsKitapEvi.Entities.DTOs.BookDTOs;
+using BabsKitapEvi.Common.DTOs.BookDTOs;
 using Microsoft.EntityFrameworkCore;
 using TS.Result;
 using Microsoft.AspNetCore.Http;

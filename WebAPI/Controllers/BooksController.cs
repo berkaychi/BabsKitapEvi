@@ -1,8 +1,9 @@
 using BabsKitapEvi.Business.Interfaces;
-using BabsKitapEvi.Entities.DTOs.BookDTOs;
+using BabsKitapEvi.Common.DTOs.BookDTOs;
 using BabsKitapEvi.Entities.Static;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
 
 namespace BabsKitapEvi.WebAPI.Controllers
 {
@@ -11,11 +12,13 @@ namespace BabsKitapEvi.WebAPI.Controllers
     {
         private readonly IBookService _bookService;
         private readonly IImageUploadService _imageUploadService;
+        private readonly IValidator<UpdateBookImageDto> _updateImageValidator;
 
-        public BooksController(IBookService bookService, IImageUploadService imageUploadService)
+        public BooksController(IBookService bookService, IImageUploadService imageUploadService, IValidator<UpdateBookImageDto> updateImageValidator)
         {
             _bookService = bookService;
             _imageUploadService = imageUploadService;
+            _updateImageValidator = updateImageValidator;
         }
 
         [HttpGet]
@@ -45,14 +48,14 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [HttpPost]
         [Authorize(Roles = Roles.Admin)]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Create([FromForm] CreateBookDto createBookDto, IFormFile? imageFile, CancellationToken ct)
+        public async Task<IActionResult> Create([FromForm] CreateBookDto createBookDto, CancellationToken ct)
         {
             string? imageUrl = null;
             string? imagePublicId = null;
-            if (imageFile is { Length: > 0 })
+            if (createBookDto.ImageFile is { Length: > 0 })
             {
-                using var stream = imageFile.OpenReadStream();
-                var upload = await _imageUploadService.UploadImageAsync(stream, imageFile.FileName, imageFile.ContentType, "babs-kitap-evi/books", ct);
+                using var stream = createBookDto.ImageFile.OpenReadStream();
+                var upload = await _imageUploadService.UploadImageAsync(stream, createBookDto.ImageFile.FileName, createBookDto.ImageFile.ContentType, "babs-kitap-evi/books", ct);
                 if (upload != null)
                 {
                     imageUrl = upload.Url;

@@ -1,5 +1,5 @@
 using BabsKitapEvi.Business.Interfaces;
-using BabsKitapEvi.Entities.DTOs.CategoryDTOs;
+using BabsKitapEvi.Common.DTOs.CategoryDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;

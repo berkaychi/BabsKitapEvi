@@ -2,7 +2,7 @@ using System.IO.Compression;
 using BabsKitapEvi.Common.DTOs.BookDTOs;
 using FluentValidation;
 
-namespace BabsKitapEvi.Business.Validators.Book
+namespace BabsKitapEvi.Business.Validators.Book.DtoValidators
 {
     public class CreateBookDtoValidator : AbstractValidator<CreateBookDto>
     {
@@ -54,6 +54,5 @@ namespace BabsKitapEvi.Business.Validators.Book
                     .WithMessage($"Sadece {string.Join(", ", AllowedMimeTypes)} formatında resim yükleyebilirsiniz.");
             });
         }
-
     }
 }

@@ -54,12 +54,8 @@ namespace BabsKitapEvi.Business.Services
 
         public async Task<Result<CartDto>> GetCartByUserIdAsync(string userId)
         {
-            var cart = await _context.Carts
-                .Include(c => c.Items)
-                .ThenInclude(ci => ci.Book)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
 
-            if (cart == null) return Result<CartDto>.Failure(404, "Cart not found.");
+            var cart = await GetOrCreateCartAsync(userId);
 
             var cartDto = _mapper.Map<CartDto>(cart);
             cartDto.TotalPrice = cart.Items.Sum(item => item.Book.Price * item.Quantity);
@@ -109,7 +105,10 @@ namespace BabsKitapEvi.Business.Services
 
         private async Task<Cart> GetOrCreateCartAsync(string userId)
         {
-            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await _context.Carts
+                 .Include(c => c.Items)
+                 .ThenInclude(ci => ci.Book)
+                 .FirstOrDefaultAsync(c => c.UserId == userId);
             if (cart == null)
             {
                 cart = new Cart { UserId = userId };

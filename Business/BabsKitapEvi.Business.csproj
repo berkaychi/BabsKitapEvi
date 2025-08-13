@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DataAccess\BabsKitapEvi.DataAccess.csproj" />
     <ProjectReference Include="..\Entities\BabsKitapEvi.Entities.csproj" />
+    <ProjectReference Include="..\Common\BabsKitapEvi.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,6 @@
 using BabsKitapEvi.Entities.Models;
-using System.IdentityModel.Tokens.Jwt;
 
-namespace BabsKitapEvi.Common.DTOs.AuthDTOs
+namespace BabsKitapEvi.Business.DTOs.MappingDTOs
 {
     public sealed class LoginInfoForMappingDto
     {

@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Business\BabsKitapEvi.Business.csproj" />
+    <ProjectReference Include="..\Common\BabsKitapEvi.Common.csproj" />
   </ItemGroup>
 
 </Project>

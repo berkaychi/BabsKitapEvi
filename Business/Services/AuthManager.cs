@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using BabsKitapEvi.Common.DTOs.UserDTOs;
 using BabsKitapEvi.Common.DTOs.AuthDTOs;
+using BabsKitapEvi.Business.DTOs.MappingDTOs;
 using TS.Result;
 
 namespace BabsKitapEvi.Business.Services

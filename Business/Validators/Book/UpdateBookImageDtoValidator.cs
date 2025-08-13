@@ -28,5 +28,4 @@ namespace BabsKitapEvi.Business.Validators.Book
             });
         }
     }
-
 }

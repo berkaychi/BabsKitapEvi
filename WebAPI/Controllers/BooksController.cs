@@ -4,6 +4,8 @@ using BabsKitapEvi.Entities.Static;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
+using FluentValidation.Results;
+using TS.Result;
 
 namespace BabsKitapEvi.WebAPI.Controllers
 {
@@ -13,12 +15,16 @@ namespace BabsKitapEvi.WebAPI.Controllers
         private readonly IBookService _bookService;
         private readonly IImageUploadService _imageUploadService;
         private readonly IValidator<UpdateBookImageDto> _updateImageValidator;
+        private readonly IValidator<CreateBookDto> _createBookValidator;
+        private readonly IValidator<UpdateBookDto> _updateBookValidator;
 
-        public BooksController(IBookService bookService, IImageUploadService imageUploadService, IValidator<UpdateBookImageDto> updateImageValidator)
+        public BooksController(IBookService bookService, IImageUploadService imageUploadService, IValidator<UpdateBookImageDto> updateImageValidator, IValidator<CreateBookDto> createBookValidator, IValidator<UpdateBookDto> updateBookValidator)
         {
             _bookService = bookService;
             _imageUploadService = imageUploadService;
             _updateImageValidator = updateImageValidator;
+            _createBookValidator = createBookValidator;
+            _updateBookValidator = updateBookValidator;
         }
 
         [HttpGet]
@@ -50,6 +56,12 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] CreateBookDto createBookDto, CancellationToken ct)
         {
+            ValidationResult validationResult = await _createBookValidator.ValidateAsync(createBookDto, ct);
+            if (!validationResult.IsValid)
+            {
+                return CreateActionResult(Result<string>.Failure(400, validationResult.Errors.Select(e => e.ErrorMessage).ToList()));
+            }
+
             string? imageUrl = null;
             string? imagePublicId = null;
             if (createBookDto.ImageFile is { Length: > 0 })
@@ -71,6 +83,12 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateBookDto updateBookDto, CancellationToken ct)
         {
+            ValidationResult validationResult = await _updateBookValidator.ValidateAsync(updateBookDto, ct);
+            if (!validationResult.IsValid)
+            {
+                return CreateActionResult(Result<string>.Failure(400, validationResult.Errors.Select(e => e.ErrorMessage).ToList()));
+            }
+
             var result = await _bookService.UpdateAsync(id, updateBookDto, null, null, ct);
             return CreateActionResult(result);
         }
@@ -78,25 +96,17 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [HttpPut("{id}/image")]
         [Authorize(Roles = Roles.Admin)]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UpdateImage(int id, IFormFile imageFile, CancellationToken ct)
+        public async Task<IActionResult> UpdateImage(int id, UpdateBookImageDto updateBookImageDto, CancellationToken ct)
         {
-            if (imageFile == null || imageFile.Length == 0)
+
+            ValidationResult validationResult = await _updateImageValidator.ValidateAsync(updateBookImageDto, cancellation: ct);
+
+            if (!validationResult.IsValid)
             {
-                return BadRequest("Image file is required.");
+                return CreateActionResult(Result<string>.Failure(400, validationResult.Errors.Select(e => e.ErrorMessage).ToList()));
             }
 
-            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
-            if (!allowedTypes.Contains(imageFile.ContentType.ToLower()))
-            {
-                return BadRequest("Invalid image type. Allowed types are: jpeg, jpg, png, gif, webp.");
-            }
-
-            if (imageFile.Length > 5 * 1024 * 1024)
-            {
-                return BadRequest("File size cannot exceed 5MB.");
-            }
-
-            var result = await _bookService.UpdateImageAsync(id, imageFile, ct);
+            var result = await _bookService.UpdateImageAsync(id, updateBookImageDto.ImageFile, ct);
             return CreateActionResult(result);
         }
 

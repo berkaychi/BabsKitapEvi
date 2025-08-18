@@ -5,6 +5,6 @@ namespace BabsKitapEvi.Entities.Models
 {
     public class AppRole : IdentityRole
     {
-        public virtual ICollection<IdentityUserRole<string>> UserRoles { get; set; }
+        public virtual ICollection<IdentityUserRole<string>>? UserRoles { get; set; }
     }
 }

@@ -1,16 +1,14 @@
 using BabsKitapEvi.Common.DTOs.CategoryDTOs;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TS.Result;
+using BabsKitapEvi.Common.Results;
 
 namespace BabsKitapEvi.Business.Interfaces
 {
     public interface ICategoryService
     {
-        Task<Result<IEnumerable<CategoryDto>>> GetAllAsync();
-        Task<Result<CategoryDto>> GetByIdAsync(int id);
-        Task<Result<CategoryDto>> CreateAsync(CategoryDto categoryDto);
-        Task<Result<string>> UpdateAsync(int id, CategoryDto categoryDto);
-        Task<Result<string>> DeleteAsync(int id);
+        Task<IServiceResult> GetAllAsync();
+        Task<IServiceResult> GetByIdAsync(int id);
+        Task<IServiceResult> CreateAsync(CreateAndUpdateCategoryDto createCategoryDto);
+        Task<IServiceResult> UpdateAsync(int id, CreateAndUpdateCategoryDto categoryDto);
+        Task<IServiceResult> DeleteAsync(int id);
     }
 }

@@ -18,5 +18,6 @@ namespace BabsKitapEvi.Common.DTOs.BookDTOs
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
         public int? CategoryId { get; set; }
+        public int? PublisherId { get; set; }
     }
 }

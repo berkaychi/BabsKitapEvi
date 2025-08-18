@@ -43,6 +43,14 @@ namespace BabsKitapEvi.WebAPI.Controllers
             return CreateActionResult(result);
         }
 
+        [HttpGet("publisher/{publisherId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPublisherBooks(int publisherId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _bookService.GetByPublisherIdAsync(publisherId, pageNumber, pageSize);
+            return CreateActionResult(result);
+        }
+
         [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
@@ -83,13 +91,14 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateBookDto updateBookDto, CancellationToken ct)
         {
+            updateBookDto.Id = id;
             ValidationResult validationResult = await _updateBookValidator.ValidateAsync(updateBookDto, ct);
             if (!validationResult.IsValid)
             {
                 return CreateActionResult(Result<string>.Failure(400, validationResult.Errors.Select(e => e.ErrorMessage).ToList()));
             }
 
-            var result = await _bookService.UpdateAsync(id, updateBookDto, null, null, ct);
+            var result = await _bookService.UpdateAsync(id, updateBookDto, ct);
             return CreateActionResult(result);
         }
 
@@ -115,6 +124,14 @@ namespace BabsKitapEvi.WebAPI.Controllers
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
             var result = await _bookService.DeleteAsync(id, ct);
+            return CreateActionResult(result);
+        }
+
+        [HttpGet("search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Search([FromQuery] BooksQuery query, CancellationToken ct)
+        {
+            var result = await _bookService.SearchAsync(query, ct);
             return CreateActionResult(result);
         }
     }

@@ -6,6 +6,11 @@ using BabsKitapEvi.Common.DTOs.BookDTOs;
 using Microsoft.EntityFrameworkCore;
 using TS.Result;
 using Microsoft.AspNetCore.Http;
+using BabsKitapEvi.Business.Validators.Book;
+using BabsKitapEvi.Common.DTOs.Shared;
+using System.Data.Common;
+using BabsKitapEvi.Business.Extensions;
+using AutoMapper.QueryableExtensions;
 
 namespace BabsKitapEvi.Business.Services
 {
@@ -14,12 +19,14 @@ namespace BabsKitapEvi.Business.Services
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IImageUploadService _imageUploadService;
+        private readonly IBookBusinessRuleValidator _bookBusinessRuleValidator;
 
-        public BookManager(ApplicationDbContext context, IMapper mapper, IImageUploadService imageUploadService)
+        public BookManager(ApplicationDbContext context, IMapper mapper, IImageUploadService imageUploadService, IBookBusinessRuleValidator bookBusinessRuleValidator)
         {
             _context = context;
             _mapper = mapper;
             _imageUploadService = imageUploadService;
+            _bookBusinessRuleValidator = bookBusinessRuleValidator;
         }
 
         public async Task<Result<IEnumerable<BookDto>>> GetAllAsync(int pageNumber, int pageSize)
@@ -39,7 +46,6 @@ namespace BabsKitapEvi.Business.Services
 
             return Result<IEnumerable<BookDto>>.Succeed(_mapper.Map<IEnumerable<BookDto>>(books));
         }
-
         public async Task<Result<IEnumerable<BookDto>>> GetByCategoryIdAsync(int categoryId, int pageNumber, int pageSize)
         {
             if (await _context.Categories.AnyAsync(c => c.Id == categoryId) == false)
@@ -65,7 +71,30 @@ namespace BabsKitapEvi.Business.Services
             return Result<IEnumerable<BookDto>>.Succeed(_mapper.Map<IEnumerable<BookDto>>(books));
         }
 
+        public async Task<Result<IEnumerable<BookDto>>> GetByPublisherIdAsync(int publisherId, int pageNumber, int pageSize)
+        {
+            if (await _context.Publishers.AnyAsync(p => p.Id == publisherId) == false)
+            {
+                return Result<IEnumerable<BookDto>>.Failure(404, "Publisher not found.");
+            }
 
+            if (pageNumber < 1 || pageSize < 1)
+            {
+                return Result<IEnumerable<BookDto>>.Failure(400, "Page number and page size must be greater than zero.");
+            }
+
+            var books = await _context.Books
+               .AsNoTracking()
+               .Include(b => b.BookPublishers!)
+                   .ThenInclude(bc => bc.Publisher)
+               .Where(b => b.BookPublishers!.Any(bc => bc.PublisherId == publisherId))
+               .OrderBy(b => b.Title)
+               .Skip((pageNumber - 1) * pageSize)
+               .Take(pageSize)
+               .ToListAsync();
+
+            return Result<IEnumerable<BookDto>>.Succeed(_mapper.Map<IEnumerable<BookDto>>(books));
+        }
         public async Task<Result<BookDto>> GetByIdAsync(int id)
         {
             var book = await _context.Books
@@ -83,14 +112,10 @@ namespace BabsKitapEvi.Business.Services
 
         public async Task<Result<BookDto>> CreateAsync(CreateBookDto createBookDto, string? imageUrl = null, string? imagePublicId = null, CancellationToken ct = default)
         {
-            if (await _context.Books.AnyAsync(b => b.ISBN == createBookDto.ISBN, ct))
+            var validationResult = await _bookBusinessRuleValidator.Validate(createBookDto);
+            if (!validationResult.IsSuccessful)
             {
-                return Result<BookDto>.Failure(400, "A book with this ISBN already exists.");
-            }
-
-            if (await _context.Books.AnyAsync(b => b.Title == createBookDto.Title && b.Author == createBookDto.Author, ct))
-            {
-                return Result<BookDto>.Failure(400, "A book with this title and author already exists.");
+                return Result<BookDto>.Failure(validationResult.StatusCode, validationResult.ErrorMessages);
             }
 
             var book = _mapper.Map<Book>(createBookDto);
@@ -100,11 +125,7 @@ namespace BabsKitapEvi.Business.Services
 
             if (createBookDto.CategoryIds != null && createBookDto.CategoryIds.Any())
             {
-                var categories = await _context.Categories.Where(c => createBookDto.CategoryIds.Contains(c.Id)).ToListAsync(ct);
-                foreach (var category in categories)
-                {
-                    book.BookCategories.Add(new BookCategory { Category = category });
-                }
+                await AddCategoriesToNewBookAsync(book, createBookDto.CategoryIds, ct);
             }
 
             _context.Books.Add(book);
@@ -112,8 +133,7 @@ namespace BabsKitapEvi.Business.Services
             return Result<BookDto>.Succeed(_mapper.Map<BookDto>(book));
         }
 
-
-        public async Task<Result<string>> UpdateAsync(int id, UpdateBookDto updateBookDto, string? newImageUrl = null, string? newImagePublicId = null, CancellationToken ct = default)
+        public async Task<Result<string>> UpdateAsync(int id, UpdateBookDto updateBookDto, CancellationToken ct = default)
         {
             var book = await _context.Books
                 .Include(b => b.BookCategories)
@@ -123,28 +143,19 @@ namespace BabsKitapEvi.Business.Services
             {
                 return Result<string>.Failure(404, "Book not found.");
             }
-            if (!string.IsNullOrEmpty(updateBookDto.ISBN) && await _context.Books.AnyAsync(b => b.ISBN == updateBookDto.ISBN && b.Id != id, ct))
+
+            updateBookDto.Id = id;
+            var validationResult = await _bookBusinessRuleValidator.Validate(updateBookDto);
+            if (!validationResult.IsSuccessful)
             {
-                return Result<string>.Failure(400, "A book with this ISBN already exists.");
+                return Result<string>.Failure(validationResult.StatusCode, validationResult.ErrorMessages);
             }
 
             _mapper.Map(updateBookDto, book);
 
-            if (!string.IsNullOrWhiteSpace(newImageUrl) && !string.IsNullOrWhiteSpace(newImagePublicId))
+            if (updateBookDto.CategoryIds != null && updateBookDto.CategoryIds.Any())
             {
-                // UI/Controller eski görseli silme kararını dışarıda verecek; burada sadece güncelle
-                book.ImageUrl = newImageUrl;
-                book.ImagePublicId = newImagePublicId;
-            }
-
-            if (updateBookDto.CategoryIds != null)
-            {
-                book.BookCategories!.Clear();
-                var categories = await _context.Categories.Where(c => updateBookDto.CategoryIds.Contains(c.Id)).ToListAsync(ct);
-                foreach (var category in categories)
-                {
-                    book.BookCategories.Add(new BookCategory { Category = category });
-                }
+                await AddCategoriesToNewBookAsync(book, updateBookDto.CategoryIds, ct);
             }
 
             book.UpdatedAt = DateTime.UtcNow;
@@ -167,25 +178,22 @@ namespace BabsKitapEvi.Business.Services
             }
 
             string? oldImagePublicId = book.ImagePublicId;
+            string? newImagePublicId = null;
 
             try
             {
-                string? imageUrl = null;
-                string? imagePublicId = null;
-
                 using var stream = imageFile.OpenReadStream();
-                var upload = await _imageUploadService.UploadImageAsync(
+                var uploadResult = await _imageUploadService.UploadImageAsync(
                     stream,
                     imageFile.FileName,
                     imageFile.ContentType,
                     "babs-kitap-evi/books",
-                    ct
-                );
-                imageUrl = upload.Url;
-                imagePublicId = upload.PublicId;
+                    ct);
 
-                book.ImageUrl = imageUrl;
-                book.ImagePublicId = imagePublicId;
+                newImagePublicId = uploadResult.PublicId;
+
+                book.ImageUrl = uploadResult.Url;
+                book.ImagePublicId = uploadResult.PublicId;
                 book.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync(ct);
@@ -206,6 +214,17 @@ namespace BabsKitapEvi.Business.Services
             }
             catch (Exception ex)
             {
+                if (!string.IsNullOrWhiteSpace(newImagePublicId))
+                {
+                    try
+                    {
+                        await _imageUploadService.DeleteImageAsync(newImagePublicId, ct);
+                    }
+                    catch (Exception)
+                    {
+                        // Buraya da loglama eklenecek.
+                    }
+                }
                 return Result<string>.Failure(500, $"Image update failed: {ex.Message}");
             }
         }
@@ -227,5 +246,34 @@ namespace BabsKitapEvi.Business.Services
             }
             return Result<string>.Succeed("Book deleted successfully.");
         }
+
+        public async Task<Result<PageResult<BookDto>>> SearchAsync(BooksQuery query, CancellationToken ct = default)
+        {
+            var result = await _context.Books
+                .AsNoTracking()
+                .ApplyFilters(query)
+                .ApplySorting(query.SortBy, query.SortDirection)
+                .ProjectTo<BookDto>(_mapper.ConfigurationProvider)
+                .ToPageResultAsync(query.PageNumber, query.PageSize, ct);
+
+            return Result<PageResult<BookDto>>.Succeed(result);
+        }
+
+        private async Task AddCategoriesToNewBookAsync(Book book, List<int> categoryIds, CancellationToken ct)
+        {
+            book.BookCategories = new List<BookCategory>();
+            if (categoryIds != null && categoryIds.Any())
+            {
+                var categories = await _context.Categories
+                    .Where(c => categoryIds.Contains(c.Id))
+                    .ToListAsync(ct);
+
+                foreach (var category in categories)
+                {
+                    book.BookCategories.Add(new BookCategory { Category = category });
+                }
+            }
+        }
+
     }
 }

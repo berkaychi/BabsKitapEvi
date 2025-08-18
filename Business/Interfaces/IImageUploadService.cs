@@ -1,5 +1,3 @@
-using System.IO;
-using System.Threading;
 using BabsKitapEvi.Common.DTOs.Shared;
 
 namespace BabsKitapEvi.Business.Interfaces

@@ -4,8 +4,6 @@ using BabsKitapEvi.Common.DTOs.UserDTOs;
 using BabsKitapEvi.Entities.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Security.Claims;
 using TS.Result;
 
 namespace BabsKitapEvi.Business.Services
@@ -65,6 +63,7 @@ namespace BabsKitapEvi.Business.Services
                 userDtos[i].Role = roles.FirstOrDefault() ?? "User";
             }
 
+
             return Result<IEnumerable<UserResponseDto>>.Succeed(userDtos);
         }
 
@@ -100,19 +99,5 @@ namespace BabsKitapEvi.Business.Services
             return Result<string>.Succeed("User updated successfully.");
         }
 
-        public async Task<Result<UserResponseDto>> GetCurrentUserProfileAsync(string userId)
-        {
-            return await GetUserByIdAsync(userId);
-        }
-
-        public async Task<Result<string>> UpdateCurrentUserAsync(string userId, UserForUpdateDto userForUpdateDto)
-        {
-            return await UpdateUserAsync(userId, userForUpdateDto);
-        }
-
-        public async Task<Result<string>> DeleteCurrentUserAsync(string userId)
-        {
-            return await DeleteUserAsync(userId);
-        }
     }
 }

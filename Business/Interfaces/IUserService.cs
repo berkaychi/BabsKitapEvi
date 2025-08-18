@@ -11,8 +11,5 @@ namespace BabsKitapEvi.Business.Interfaces
         Task<Result<string>> UpdateUserAsync(string userId, UserForUpdateDto userForUpdateDto);
         Task<Result<string>> DeleteUserAsync(string userId);
         Task<Result<string>> ChangePasswordAsync(string userId, UserForChangePasswordDto userForChangePasswordDto);
-        Task<Result<UserResponseDto>> GetCurrentUserProfileAsync(string userId);
-        Task<Result<string>> UpdateCurrentUserAsync(string userId, UserForUpdateDto userForUpdateDto);
-        Task<Result<string>> DeleteCurrentUserAsync(string userId);
     }
 }

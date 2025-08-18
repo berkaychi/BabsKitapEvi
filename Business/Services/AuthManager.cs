@@ -25,7 +25,6 @@ namespace BabsKitapEvi.Business.Services
         private readonly IMapper _mapper;
         private readonly DataAccess.ApplicationDbContext _context;
         private readonly RoleManager<AppRole> _roleManager;
-
         public AuthManager(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IConfiguration configuration, IMapper mapper, DataAccess.ApplicationDbContext context, RoleManager<AppRole> roleManager)
         {
             _userManager = userManager;
@@ -41,13 +40,13 @@ namespace BabsKitapEvi.Business.Services
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return Result<AuthResponseDto>.Failure(404, "User not found.");
+                return Result<AuthResponseDto>.Failure(404, "Invalid email or password.");
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
             if (!result.Succeeded)
             {
-                return Result<AuthResponseDto>.Failure(400, "Invalid credentials.");
+                return Result<AuthResponseDto>.Failure(400, "Invalid email or password.");
             }
 
             var token = await GenerateJwtToken(user);

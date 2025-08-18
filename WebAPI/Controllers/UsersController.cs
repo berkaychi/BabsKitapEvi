@@ -26,6 +26,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserById(string id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -48,11 +49,12 @@ namespace BabsKitapEvi.WebAPI.Controllers
             {
                 return CreateActionResult(Result<object>.Failure(401, "Unauthorized"));
             }
-            var result = await _userService.GetCurrentUserProfileAsync(userId);
+            var result = await _userService.GetUserByIdAsync(userId);
             return CreateActionResult(result);
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UserForUpdateDto userForUpdateDto)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -74,7 +76,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
             {
                 return CreateActionResult(Result<object>.Failure(401, "Unauthorized"));
             }
-            var result = await _userService.UpdateCurrentUserAsync(userId, userForUpdateDto);
+            var result = await _userService.UpdateUserAsync(userId, userForUpdateDto);
             return CreateActionResult(result);
         }
 
@@ -86,11 +88,12 @@ namespace BabsKitapEvi.WebAPI.Controllers
             {
                 return CreateActionResult(Result<object>.Failure(401, "Unauthorized"));
             }
-            var result = await _userService.DeleteCurrentUserAsync(userId);
+            var result = await _userService.DeleteUserAsync(userId);
             return CreateActionResult(result);
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);

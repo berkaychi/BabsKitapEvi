@@ -34,17 +34,17 @@ namespace BabsKitapEvi.WebAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([FromBody] CategoryDto categoryDto)
+        public async Task<IActionResult> Create(CreateAndUpdateCategoryDto createCategoryDto)
         {
-            var result = await _categoryService.CreateAsync(categoryDto);
+            var result = await _categoryService.CreateAsync(createCategoryDto);
             return CreateActionResult(result);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update(int id, [FromBody] CategoryDto categoryDto)
+        public async Task<IActionResult> Update(int id, [FromBody] CreateAndUpdateCategoryDto updateCategoryDto)
         {
-            var result = await _categoryService.UpdateAsync(id, categoryDto);
+            var result = await _categoryService.UpdateAsync(id, updateCategoryDto);
             return CreateActionResult(result);
         }
 

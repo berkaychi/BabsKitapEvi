@@ -6,7 +6,7 @@ using BabsKitapEvi.Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TS.Result;
+using BabsKitapEvi.Common.Results;
 
 namespace BabsKitapEvi.Business.Services
 {
@@ -21,52 +21,55 @@ namespace BabsKitapEvi.Business.Services
             _mapper = mapper;
         }
 
-        public async Task<Result<CategoryDto>> CreateAsync(CategoryDto categoryDto)
+        public async Task<IServiceResult> CreateAsync(CreateAndUpdateCategoryDto createCategoryDto)
         {
-            var category = _mapper.Map<Category>(categoryDto);
+            var category = _mapper.Map<Category>(createCategoryDto);
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
-            return Result<CategoryDto>.Succeed(_mapper.Map<CategoryDto>(category));
+            var categoryDto = _mapper.Map<CategoryDto>(category);
+            return new SuccessDataResult<CategoryDto>(categoryDto, 201, "Category created successfully.");
         }
 
-        public async Task<Result<string>> DeleteAsync(int id)
+        public async Task<IServiceResult> DeleteAsync(int id)
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
-                return Result<string>.Failure(404, "Category not found.");
+                return new ErrorResult(404, "Category not found.");
             }
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
-            return Result<string>.Succeed("Category deleted successfully.");
+            return new SuccessResult(204, "Category deleted successfully.");
         }
 
-        public async Task<Result<IEnumerable<CategoryDto>>> GetAllAsync()
+        public async Task<IServiceResult> GetAllAsync()
         {
             var categories = await _context.Categories.AsNoTracking().ToListAsync();
-            return Result<IEnumerable<CategoryDto>>.Succeed(_mapper.Map<IEnumerable<CategoryDto>>(categories));
+            var categoryDtos = _mapper.Map<IEnumerable<CategoryDto>>(categories);
+            return new SuccessDataResult<IEnumerable<CategoryDto>>(categoryDtos, 200);
         }
 
-        public async Task<Result<CategoryDto>> GetByIdAsync(int id)
+        public async Task<IServiceResult> GetByIdAsync(int id)
         {
             var category = await _context.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
             if (category == null)
             {
-                return Result<CategoryDto>.Failure(404, "Category not found.");
+                return new ErrorResult(404, "Category not found.");
             }
-            return Result<CategoryDto>.Succeed(_mapper.Map<CategoryDto>(category));
+            var categoryDto = _mapper.Map<CategoryDto>(category);
+            return new SuccessDataResult<CategoryDto>(categoryDto, 200);
         }
 
-        public async Task<Result<string>> UpdateAsync(int id, CategoryDto categoryDto)
+        public async Task<IServiceResult> UpdateAsync(int id, CreateAndUpdateCategoryDto categoryDto)
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
-                return Result<string>.Failure(404, "Category not found.");
+                return new ErrorResult(404, "Category not found.");
             }
             _mapper.Map(categoryDto, category);
             await _context.SaveChangesAsync();
-            return Result<string>.Succeed("Category updated successfully.");
+            return new SuccessResult(204, "Category updated successfully.");
         }
     }
 }

@@ -1,4 +1,5 @@
 using BabsKitapEvi.Common.DTOs.CategoryDTOs;
+using BabsKitapEvi.Common.DTOs.PublisherDTOs;
 using System.Collections.Generic;
 namespace BabsKitapEvi.Common.DTOs.BookDTOs
 {
@@ -14,5 +15,6 @@ namespace BabsKitapEvi.Common.DTOs.BookDTOs
         public int StockQuantity { get; set; }
         public decimal Price { get; set; }
         public ICollection<CategoryDto>? Categories { get; set; }
+        public ICollection<PublisherDto>? Publishers { get; set; }
     }
 }

@@ -17,6 +17,11 @@ namespace BabsKitapEvi.DataAccess
         public DbSet<BookCategory> BookCategories { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Publisher> Publishers { get; set; }
+        public DbSet<BookPublisher> BookPublishers { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Address> Addresses { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -41,11 +46,48 @@ namespace BabsKitapEvi.DataAccess
                 .WithMany(c => c.BookCategories)
                 .HasForeignKey(bc => bc.CategoryId);
 
+            builder.Entity<BookPublisher>()
+                .HasKey(bp => new { bp.BookId, bp.PublisherId });
+
+            builder.Entity<BookPublisher>()
+                .HasOne(bp => bp.Book)
+                .WithMany(b => b.BookPublishers)
+                .HasForeignKey(bp => bp.BookId);
+
+            builder.Entity<BookPublisher>()
+                .HasOne(bp => bp.Publisher)
+                .WithMany(p => p.BookPublishers)
+                .HasForeignKey(bp => bp.PublisherId);
+
             builder.Entity<AppUser>()
                 .HasOne(a => a.Cart)
                 .WithOne(c => c.User)
                 .HasForeignKey<Cart>(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Order>(o =>
+            {
+                o.Property(p => p.TotalAmount).HasColumnType("decimal(18,2)");
+            });
+
+            builder.Entity<Order>()
+                .HasOne(o => o.User)
+                .WithMany()
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<OrderItem>(oi =>
+            {
+                oi.Property(p => p.Price).HasColumnType("decimal(18,2)");
+            });
+
+            builder.Entity<Address>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.Addresses)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
+
+
     }
 }

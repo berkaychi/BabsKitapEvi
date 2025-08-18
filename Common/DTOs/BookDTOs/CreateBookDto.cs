@@ -13,6 +13,7 @@ namespace BabsKitapEvi.Common.DTOs.BookDTOs
         public int StockQuantity { get; set; } = 0;
         public decimal Price { get; set; } = 0.0m;
         public List<int>? CategoryIds { get; set; }
+        public List<int>? PublisherIds { get; set; }
         public IFormFile? ImageFile { get; set; }
     }
 }

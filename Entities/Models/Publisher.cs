@@ -1,9 +1,9 @@
 namespace BabsKitapEvi.Entities.Models
 {
-    public class Category
+    public class Publisher
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
-        public ICollection<BookCategory> BookCategories { get; set; } = new List<BookCategory>();
+        public ICollection<BookPublisher> BookPublishers { get; set; } = new List<BookPublisher>();
     }
 }

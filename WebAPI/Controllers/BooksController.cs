@@ -1,11 +1,12 @@
 using BabsKitapEvi.Business.Interfaces;
 using BabsKitapEvi.Common.DTOs.BookDTOs;
+using BabsKitapEvi.Common.Results;
 using BabsKitapEvi.Entities.Static;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
 using FluentValidation.Results;
-using TS.Result;
+
 
 namespace BabsKitapEvi.WebAPI.Controllers
 {
@@ -67,7 +68,8 @@ namespace BabsKitapEvi.WebAPI.Controllers
             ValidationResult validationResult = await _createBookValidator.ValidateAsync(createBookDto, ct);
             if (!validationResult.IsValid)
             {
-                return CreateActionResult(Result<string>.Failure(400, validationResult.Errors.Select(e => e.ErrorMessage).ToList()));
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                return CreateActionResult(new ErrorResult(400, "Validation failed.", errors));
             }
 
             string? imageUrl = null;
@@ -95,7 +97,8 @@ namespace BabsKitapEvi.WebAPI.Controllers
             ValidationResult validationResult = await _updateBookValidator.ValidateAsync(updateBookDto, ct);
             if (!validationResult.IsValid)
             {
-                return CreateActionResult(Result<string>.Failure(400, validationResult.Errors.Select(e => e.ErrorMessage).ToList()));
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                return CreateActionResult(new ErrorResult(400, "Validation failed.", errors));
             }
 
             var result = await _bookService.UpdateAsync(id, updateBookDto, ct);
@@ -112,7 +115,8 @@ namespace BabsKitapEvi.WebAPI.Controllers
 
             if (!validationResult.IsValid)
             {
-                return CreateActionResult(Result<string>.Failure(400, validationResult.Errors.Select(e => e.ErrorMessage).ToList()));
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                return CreateActionResult(new ErrorResult(400, "Validation failed.", errors));
             }
 
             var result = await _bookService.UpdateImageAsync(id, updateBookImageDto.ImageFile, ct);

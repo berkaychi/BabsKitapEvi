@@ -21,7 +21,6 @@ namespace BabsKitapEvi.Business.Services
 
         public async Task<IServiceResult> CreateOrderAsync(CreateOrderDto createOrderDto, string userId)
         {
-            var cartResult = await _cartService.GetCartByUserIdAsync(userId);
 
             throw new NotImplementedException();
         }

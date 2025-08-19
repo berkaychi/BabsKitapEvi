@@ -1,6 +1,6 @@
 using BabsKitapEvi.DataAccess;
 using Microsoft.EntityFrameworkCore;
-using TS.Result;
+using BabsKitapEvi.Common.Results;
 
 namespace BabsKitapEvi.Business.Validators.Book.BusinessRuleValidators
 {
@@ -13,7 +13,7 @@ namespace BabsKitapEvi.Business.Validators.Book.BusinessRuleValidators
             _context = context;
         }
 
-        public async Task<Result<string>> Validate(BookValidatorRequest request)
+        public async Task<IServiceResult> Validate(BookValidatorRequest request)
         {
             var isbnQuery = _context.Books.Where(b => b.ISBN == request.ISBN);
             if (request.Id.HasValue)
@@ -23,7 +23,7 @@ namespace BabsKitapEvi.Business.Validators.Book.BusinessRuleValidators
 
             if (await isbnQuery.AnyAsync())
             {
-                return Result<string>.Failure(400, "A book with the same ISBN already exists.");
+                return new ErrorResult(400, "A book with the same ISBN already exists.");
             }
 
             var titleAuthorQuery = _context.Books.Where(b => b.Title == request.Title && b.Author == request.Author);
@@ -33,7 +33,7 @@ namespace BabsKitapEvi.Business.Validators.Book.BusinessRuleValidators
             }
             if (await titleAuthorQuery.AnyAsync())
             {
-                return Result<string>.Failure(400, "A book with the same title and author already exists.");
+                return new ErrorResult(400, "A book with the same title and author already exists.");
             }
 
             if (request.CategoryIds != null && request.CategoryIds.Any())
@@ -45,11 +45,11 @@ namespace BabsKitapEvi.Business.Validators.Book.BusinessRuleValidators
 
                 if (distinctIdCount != matchingCountInDb)
                 {
-                    return Result<string>.Failure(400, "Some category IDs do not exist in the database.");
+                    return new ErrorResult(400, "Some category IDs do not exist in the database.");
                 }
             }
 
-            return Result<string>.Succeed("Book validation passed.");
+            return new SuccessResult(200, "Book validation passed.");
         }
     }
 }

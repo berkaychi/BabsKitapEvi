@@ -1,15 +1,15 @@
 using BabsKitapEvi.Common.DTOs.UserDTOs;
 using BabsKitapEvi.Entities.Models;
-using TS.Result;
+using BabsKitapEvi.Common.Results;
 
 namespace BabsKitapEvi.Business.Interfaces
 {
     public interface IUserService
     {
-        Task<Result<IEnumerable<UserResponseDto>>> GetAllUsersAsync();
-        Task<Result<UserResponseDto>> GetUserByIdAsync(string userId);
-        Task<Result<string>> UpdateUserAsync(string userId, UserForUpdateDto userForUpdateDto);
-        Task<Result<string>> DeleteUserAsync(string userId);
-        Task<Result<string>> ChangePasswordAsync(string userId, UserForChangePasswordDto userForChangePasswordDto);
+        Task<IServiceResult> GetAllUsersAsync();
+        Task<IServiceResult> GetUserByIdAsync(string userId);
+        Task<IServiceResult> UpdateUserAsync(string userId, UserForUpdateDto userForUpdateDto);
+        Task<IServiceResult> DeleteUserAsync(string userId);
+        Task<IServiceResult> ChangePasswordAsync(string userId, UserForChangePasswordDto userForChangePasswordDto);
     }
 }

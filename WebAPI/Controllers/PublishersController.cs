@@ -1,5 +1,8 @@
+using System.Security.Claims;
 using BabsKitapEvi.Business.Interfaces;
 using BabsKitapEvi.Common.DTOs.PublisherDTOs;
+using BabsKitapEvi.Common.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BabsKitapEvi.WebAPI.Controllers
@@ -30,6 +33,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(CreateAndUpdatePublisherDto newPublisherDto)
         {
             var result = await _publisherService.CreateAsync(newPublisherDto);
@@ -37,6 +41,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateAndUpdatePublisherDto updatePublisherDto)
         {
             var result = await _publisherService.UpdateAsync(id, updatePublisherDto);
@@ -44,6 +49,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _publisherService.DeleteAsync(id);

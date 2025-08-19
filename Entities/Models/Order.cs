@@ -11,6 +11,7 @@ namespace BabsKitapEvi.Entities.Models
         public decimal TotalAmount { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
+        public string ShippingFullName { get; set; } = null!;
         public string ShippingAddress { get; set; } = null!;
         public string City { get; set; } = null!;
         public string Country { get; set; } = null!;

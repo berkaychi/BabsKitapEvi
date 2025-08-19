@@ -1,14 +1,14 @@
 using BabsKitapEvi.Business.Interfaces;
 using BabsKitapEvi.Common.DTOs.UserDTOs;
+using BabsKitapEvi.Common.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using TS.Result;
 
 namespace BabsKitapEvi.WebAPI.Controllers
 {
     [Authorize]
-    public sealed class UsersController : CustomBaseController
+    public sealed class UsersController : PrivateBaseController
     {
         private readonly IUserService _userService;
 
@@ -29,14 +29,6 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserById(string id)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userRole = User.FindFirstValue(ClaimTypes.Role);
-
-            if (userRole != "Admin" && currentUserId != id)
-            {
-                return CreateActionResult(Result<object>.Failure(403, "Forbidden"));
-            }
-
             var result = await _userService.GetUserByIdAsync(id);
             return CreateActionResult(result);
         }
@@ -44,12 +36,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUserProfile()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return CreateActionResult(Result<object>.Failure(401, "Unauthorized"));
-            }
-            var result = await _userService.GetUserByIdAsync(userId);
+            var result = await _userService.GetUserByIdAsync(UserId);
             return CreateActionResult(result);
         }
 
@@ -57,13 +44,6 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UserForUpdateDto userForUpdateDto)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
-            if (currentUserId != id && currentUserRole != "Admin")
-            {
-                return CreateActionResult(Result<object>.Failure(403, "Forbidden"));
-            }
-
             var result = await _userService.UpdateUserAsync(id, userForUpdateDto);
             return CreateActionResult(result);
         }
@@ -71,24 +51,14 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [HttpPut("me")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UserForUpdateDto userForUpdateDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return CreateActionResult(Result<object>.Failure(401, "Unauthorized"));
-            }
-            var result = await _userService.UpdateUserAsync(userId, userForUpdateDto);
+            var result = await _userService.UpdateUserAsync(UserId, userForUpdateDto);
             return CreateActionResult(result);
         }
 
         [HttpDelete("me")]
         public async Task<IActionResult> DeleteCurrentUser()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return CreateActionResult(Result<object>.Failure(401, "Unauthorized"));
-            }
-            var result = await _userService.DeleteUserAsync(userId);
+            var result = await _userService.DeleteUserAsync(UserId);
             return CreateActionResult(result);
         }
 
@@ -96,14 +66,6 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userRole = User.FindFirstValue(ClaimTypes.Role);
-
-            if (userRole != "Admin" && currentUserId != id)
-            {
-                return CreateActionResult(Result<object>.Failure(403, "Forbidden"));
-            }
-
             var result = await _userService.DeleteUserAsync(id);
             return CreateActionResult(result);
         }
@@ -111,13 +73,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] UserForChangePasswordDto userForChangePasswordDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return CreateActionResult(Result<object>.Failure(401, "Unauthorized"));
-            }
-
-            var result = await _userService.ChangePasswordAsync(userId, userForChangePasswordDto);
+            var result = await _userService.ChangePasswordAsync(UserId, userForChangePasswordDto);
             return CreateActionResult(result);
         }
     }

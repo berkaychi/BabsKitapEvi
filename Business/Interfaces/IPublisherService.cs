@@ -1,14 +1,14 @@
 using BabsKitapEvi.Common.DTOs.PublisherDTOs;
-using TS.Result;
+using BabsKitapEvi.Common.Results;
 
 namespace BabsKitapEvi.Business.Interfaces
 {
     public interface IPublisherService
     {
-        Task<Result<IEnumerable<PublisherDto>>> GetAllAsync();
-        Task<Result<PublisherDto>> GetByIdAsync(int id);
-        Task<Result<PublisherDto>> CreateAsync(CreateAndUpdatePublisherDto createPublisherDto);
-        Task<Result<string>> UpdateAsync(int id, CreateAndUpdatePublisherDto updatePublisherDto);
-        Task<Result<string>> DeleteAsync(int id);
+        Task<IServiceResult> GetAllAsync();
+        Task<IServiceResult> GetByIdAsync(int id);
+        Task<IServiceResult> CreateAsync(CreateAndUpdatePublisherDto createPublisherDto);
+        Task<IServiceResult> UpdateAsync(int id, CreateAndUpdatePublisherDto updatePublisherDto);
+        Task<IServiceResult> DeleteAsync(int id);
     }
 }

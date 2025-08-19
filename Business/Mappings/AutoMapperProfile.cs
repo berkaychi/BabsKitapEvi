@@ -7,6 +7,8 @@ using BabsKitapEvi.Business.DTOs.MappingDTOs;
 using BabsKitapEvi.Common.DTOs.CategoryDTOs;
 using BabsKitapEvi.Common.DTOs.CartDTOs;
 using BabsKitapEvi.Common.DTOs.PublisherDTOs;
+using BabsKitapEvi.Common.DTOs.OrderDTOs;
+using BabsKitapEvi.Common.DTOs.AddressDTOs;
 
 namespace BabsKitapEvi.Business.Mappings
 {
@@ -72,11 +74,26 @@ namespace BabsKitapEvi.Business.Mappings
 
             // DTO -> Entity for write operations
             CreateMap<AddCartItemDto, CartItem>();
+
             CreateMap<UpdateCartItemDto, CartItem>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CartId, opt => opt.Ignore())
                 .ForMember(dest => dest.Cart, opt => opt.Ignore())
                 .ForMember(dest => dest.Book, opt => opt.Ignore());
+
+            CreateMap<Order, OrderDto>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+            CreateMap<OrderItem, OrderItemDto>()
+                .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price));
+
+            CreateMap<Address, AddressDto>();
+
+            CreateMap<CreateAddressDto, Address>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore());
         }
     }
 }

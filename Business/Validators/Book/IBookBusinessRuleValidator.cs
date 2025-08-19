@@ -1,10 +1,10 @@
 using BabsKitapEvi.Business.Validators.Book.BusinessRuleValidators;
-using TS.Result;
+using BabsKitapEvi.Common.Results;
 
 namespace BabsKitapEvi.Business.Validators.Book
 {
     public interface IBookBusinessRuleValidator
     {
-        Task<Result<string>> Validate(BookValidatorRequest request);
+        Task<IServiceResult> Validate(BookValidatorRequest request);
     }
 }

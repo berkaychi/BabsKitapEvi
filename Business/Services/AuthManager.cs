@@ -13,7 +13,7 @@ using System.Text;
 using BabsKitapEvi.Common.DTOs.UserDTOs;
 using BabsKitapEvi.Common.DTOs.AuthDTOs;
 using BabsKitapEvi.Business.DTOs.MappingDTOs;
-using TS.Result;
+using BabsKitapEvi.Common.Results;
 
 namespace BabsKitapEvi.Business.Services
 {
@@ -35,18 +35,18 @@ namespace BabsKitapEvi.Business.Services
             _roleManager = roleManager;
         }
 
-        public async Task<Result<AuthResponseDto>> Login(string email, string password)
+        public async Task<IServiceResult> Login(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return Result<AuthResponseDto>.Failure(404, "Invalid email or password.");
+                return new ErrorResult(404, "Invalid email or password.");
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
             if (!result.Succeeded)
             {
-                return Result<AuthResponseDto>.Failure(400, "Invalid email or password.");
+                return new ErrorResult(400, "Invalid email or password.");
             }
 
             var token = await GenerateJwtToken(user);
@@ -74,21 +74,23 @@ namespace BabsKitapEvi.Business.Services
                 ExpiryTime = token.ValidTo
             };
 
-            return Result<AuthResponseDto>.Succeed(_mapper.Map<AuthResponseDto>(loginInfo));
+            var authResponse = _mapper.Map<AuthResponseDto>(loginInfo);
+            return new SuccessDataResult<AuthResponseDto>(authResponse, 200, "Login successful.");
         }
 
-        public async Task<Result<UserDto>> Register(AppUser user, string password)
+        public async Task<IServiceResult> Register(AppUser user, string password)
         {
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded)
             {
-                return Result<UserDto>.Failure(400, result.Errors.Select(e => e.Description).ToList());
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return new ErrorResult(400, "Registration failed.", errors);
             }
 
             await _userManager.AddToRoleAsync(user, Roles.User);
 
             var userDto = _mapper.Map<UserDto>(user);
-            return Result<UserDto>.Succeed(userDto);
+            return new SuccessDataResult<UserDto>(userDto, 201, "User registered successfully.");
         }
 
         private async Task<JwtSecurityToken> GenerateJwtToken(AppUser user)
@@ -128,19 +130,19 @@ namespace BabsKitapEvi.Business.Services
             return Convert.ToBase64String(randomNumber);
         }
 
-        public async Task<Result<TokenDto>> RefreshTokenLoginAsync(RefreshTokenDto refreshTokenDto)
+        public async Task<IServiceResult> RefreshTokenLoginAsync(RefreshTokenDto refreshTokenDto)
         {
             var userRefreshToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(urt => urt.Token == refreshTokenDto.RefreshToken);
 
             if (userRefreshToken == null || userRefreshToken.ExpiryTime <= DateTime.UtcNow)
             {
-                return Result<TokenDto>.Failure(400, "Invalid or expired refresh token.");
+                return new ErrorResult(400, "Invalid or expired refresh token.");
             }
 
             var user = await _userManager.FindByIdAsync(userRefreshToken.UserId);
             if (user == null)
             {
-                return Result<TokenDto>.Failure(404, "User associated with the refresh token not found.");
+                return new ErrorResult(404, "User associated with the refresh token not found.");
             }
 
             var token = await GenerateJwtToken(user);
@@ -152,24 +154,25 @@ namespace BabsKitapEvi.Business.Services
             _context.UserRefreshTokens.Update(userRefreshToken);
             await _context.SaveChangesAsync();
 
-            return Result<TokenDto>.Succeed(new TokenDto
+            var tokenDto = new TokenDto
             {
                 AccessToken = accessToken,
                 RefreshToken = newRefreshToken
-            });
+            };
+            return new SuccessDataResult<TokenDto>(tokenDto, 200, "Token refreshed successfully.");
         }
 
-        public async Task<Result<string>> LogoutAsync(RefreshTokenDto refreshTokenDto)
+        public async Task<IServiceResult> LogoutAsync(RefreshTokenDto refreshTokenDto)
         {
             var userRefreshToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(urt => urt.Token == refreshTokenDto.RefreshToken);
             if (userRefreshToken == null)
             {
-                return Result<string>.Failure(404, "Refresh token not found.");
+                return new ErrorResult(404, "Refresh token not found.");
             }
 
             _context.UserRefreshTokens.Remove(userRefreshToken);
             await _context.SaveChangesAsync();
-            return Result<string>.Succeed("Logout successful.");
+            return new SuccessResult(200, "Logout successful.");
         }
     }
 }

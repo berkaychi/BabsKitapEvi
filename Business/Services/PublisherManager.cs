@@ -19,7 +19,7 @@ namespace BabsKitapEvi.Business.Services
             _mapper = mapper;
         }
 
-        public async Task<IServiceResult> GetAllAsync()
+        public async Task<IServiceResult<IEnumerable<PublisherDto>>> GetAllAsync()
         {
             var publishers = await _context.Publishers.ToListAsync();
             var publisherDtos = _mapper.Map<IEnumerable<PublisherDto>>(publishers);
@@ -27,13 +27,13 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessDataResult<IEnumerable<PublisherDto>>(publisherDtos, 200, "Publishers retrieved successfully.");
         }
 
-        public async Task<IServiceResult> GetByIdAsync(int id)
+        public async Task<IServiceResult<PublisherDto>> GetByIdAsync(int id)
         {
             var publisher = await _context.Publishers.FindAsync(id);
 
             if (publisher == null)
             {
-                return new ErrorResult(404, "Publisher not found.");
+                return new ErrorDataResult<PublisherDto>(default!, 404, "Publisher not found.");
             }
 
             var publisherDto = _mapper.Map<PublisherDto>(publisher);
@@ -41,7 +41,7 @@ namespace BabsKitapEvi.Business.Services
         }
 
 
-        public async Task<IServiceResult> CreateAsync(CreateAndUpdatePublisherDto createPublisherDto)
+        public async Task<IServiceResult<PublisherDto>> CreateAsync(CreateAndUpdatePublisherDto createPublisherDto)
         {
             var newPublisher = _mapper.Map<Publisher>(createPublisherDto);
 
@@ -55,12 +55,12 @@ namespace BabsKitapEvi.Business.Services
         }
 
 
-        public async Task<IServiceResult> UpdateAsync(int id, CreateAndUpdatePublisherDto updatePublisherDto)
+        public async Task<IServiceResult<PublisherDto>> UpdateAsync(int id, CreateAndUpdatePublisherDto updatePublisherDto)
         {
             var publisher = await _context.Publishers.FindAsync(id);
             if (publisher == null)
             {
-                return new ErrorResult(404, "Publisher not found.");
+                return new ErrorDataResult<PublisherDto>(default!, 404, "Publisher not found.");
             }
 
             _mapper.Map(updatePublisherDto, publisher);
@@ -70,7 +70,8 @@ namespace BabsKitapEvi.Business.Services
             _context.Update(publisher);
             await _context.SaveChangesAsync();
 
-            return new SuccessResult(200, "Publisher updated successfully.");
+            var updatedPublisherDto = _mapper.Map<PublisherDto>(publisher);
+            return new SuccessDataResult<PublisherDto>(updatedPublisherDto, 200, "Publisher updated successfully.");
         }
 
         public async Task<IServiceResult> DeleteAsync(int id)

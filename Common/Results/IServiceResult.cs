@@ -6,4 +6,9 @@ namespace BabsKitapEvi.Common.Results
         string? Message { get; }
         int StatusCode { get; }
     }
+
+    public interface IServiceResult<T> : IServiceResult
+    {
+        T Data { get; }
+    }
 }

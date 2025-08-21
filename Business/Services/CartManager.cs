@@ -21,7 +21,7 @@ namespace BabsKitapEvi.Business.Services
             _mapper = mapper;
         }
 
-        public async Task<IServiceResult> AddItemToCartAsync(string userId, AddCartItemDto itemDto)
+        public async Task<IServiceResult<CartDto>> AddItemToCartAsync(string userId, AddCartItemDto itemDto)
         {
             var cart = await GetOrCreateCartAsync(userId);
             var cartItem = await _context.CartItems.FirstOrDefaultAsync(ci => ci.CartId == cart.Id && ci.BookId == itemDto.BookId);
@@ -45,14 +45,18 @@ namespace BabsKitapEvi.Business.Services
                 }
                 else
                 {
-                    return new ErrorResult(404, "Book not found.");
+                    return new ErrorDataResult<CartDto>(default!, 404, "Book not found.");
                 }
             }
             await _context.SaveChangesAsync();
-            return new SuccessResult(200, "Item added to cart.");
+            
+            var updatedCart = await GetOrCreateCartAsync(userId);
+            var cartDto = _mapper.Map<CartDto>(updatedCart);
+            cartDto.TotalPrice = updatedCart.Items.Sum(item => item.Book.Price * item.Quantity);
+            return new SuccessDataResult<CartDto>(cartDto, 200, "Item added to cart.");
         }
 
-        public async Task<IServiceResult> GetCartByUserIdAsync(string userId)
+        public async Task<IServiceResult<CartDto>> GetCartByUserIdAsync(string userId)
         {
 
             var cart = await GetOrCreateCartAsync(userId);
@@ -62,7 +66,7 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessDataResult<CartDto>(cartDto, 200, "Cart retrieved successfully.");
         }
 
-        public async Task<IServiceResult> RemoveItemFromCartAsync(string userId, int bookId)
+        public async Task<IServiceResult<CartDto>> RemoveItemFromCartAsync(string userId, int bookId)
         {
             var cart = await GetOrCreateCartAsync(userId);
             var cartItem = await _context.CartItems.FirstOrDefaultAsync(ci => ci.CartId == cart.Id && ci.BookId == bookId);
@@ -71,9 +75,12 @@ namespace BabsKitapEvi.Business.Services
             {
                 _context.CartItems.Remove(cartItem);
                 await _context.SaveChangesAsync();
-                return new SuccessResult(200, "Item removed from cart.");
+                var updatedCart = await GetOrCreateCartAsync(userId);
+                var cartDto = _mapper.Map<CartDto>(updatedCart);
+                cartDto.TotalPrice = updatedCart.Items.Sum(item => item.Book.Price * item.Quantity);
+                return new SuccessDataResult<CartDto>(cartDto, 200, "Item removed from cart.");
             }
-            return new ErrorResult(404, "Item not found in cart.");
+            return new ErrorDataResult<CartDto>(default!, 404, "Item not found in cart.");
         }
 
         public async Task<IServiceResult> ClearCartAsync(string userId)
@@ -85,14 +92,14 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessResult(200, "Cart cleared.");
         }
 
-        public async Task<IServiceResult> UpdateItemInCartAsync(string userId, int bookId, UpdateCartItemDto itemDto)
+        public async Task<IServiceResult<CartDto>> UpdateItemInCartAsync(string userId, int bookId, UpdateCartItemDto itemDto)
         {
             var cart = await GetOrCreateCartAsync(userId);
             var cartItem = await _context.CartItems.FirstOrDefaultAsync(ci => ci.CartId == cart.Id && ci.BookId == bookId);
 
             if (cartItem == null)
             {
-                return new ErrorResult(404, "Cart item not found.");
+                return new ErrorDataResult<CartDto>(default!, 404, "Cart item not found.");
             }
 
             if (itemDto.Quantity > 0)
@@ -100,7 +107,11 @@ namespace BabsKitapEvi.Business.Services
                 cartItem.Quantity = itemDto.Quantity;
             }
             await _context.SaveChangesAsync();
-            return new SuccessResult(200, "Cart item updated.");
+            
+            var updatedCart = await GetOrCreateCartAsync(userId);
+            var cartDto = _mapper.Map<CartDto>(updatedCart);
+            cartDto.TotalPrice = updatedCart.Items.Sum(item => item.Book.Price * item.Quantity);
+            return new SuccessDataResult<CartDto>(cartDto, 200, "Cart item updated.");
         }
 
         private async Task<Cart> GetOrCreateCartAsync(string userId)

@@ -1,8 +1,12 @@
+using System.IO.Compression;
 using AutoMapper;
 using BabsKitapEvi.Business.Interfaces;
 using BabsKitapEvi.Common.DTOs.OrderDTOs;
 using BabsKitapEvi.Common.Results;
 using BabsKitapEvi.DataAccess;
+using BabsKitapEvi.Entities.Enums;
+using BabsKitapEvi.Entities.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BabsKitapEvi.Business.Services
 {
@@ -19,18 +23,17 @@ namespace BabsKitapEvi.Business.Services
             _cartService = cartService;
         }
 
-        public async Task<IServiceResult> CreateOrderAsync(CreateOrderDto createOrderDto, string userId)
-        {
-
-            throw new NotImplementedException();
-        }
-
-        public Task<IServiceResult> GetOrderByIdAsync(int orderId, string userId)
+        public async Task<IServiceResult<OrderDto>> CreateOrderAsync(CreateOrderDto createOrderDto, string userId)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IServiceResult> GetOrdersForUserAsync(string userId)
+        public Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersForUserAsync(string userId)
         {
             throw new NotImplementedException();
         }

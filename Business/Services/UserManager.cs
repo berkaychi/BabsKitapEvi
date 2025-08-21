@@ -54,7 +54,7 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessResult(200, "User deleted successfully.");
         }
 
-        public async Task<IServiceResult> GetAllUsersAsync()
+        public async Task<IServiceResult<IEnumerable<UserResponseDto>>> GetAllUsersAsync()
         {
             var users = await _userManager.Users.AsNoTracking().ToListAsync();
             var userDtos = _mapper.Map<List<UserResponseDto>>(users);
@@ -68,12 +68,12 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessDataResult<IEnumerable<UserResponseDto>>(userDtos, 200, "Users retrieved successfully.");
         }
 
-        public async Task<IServiceResult> GetUserByIdAsync(string userId)
+        public async Task<IServiceResult<UserResponseDto>> GetUserByIdAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new ErrorResult(404, "User not found.");
+                return new ErrorDataResult<UserResponseDto>(default!, 404, "User not found.");
             }
             var roles = await _userManager.GetRolesAsync(user);
             var userDto = _mapper.Map<UserResponseDto>(user);
@@ -82,12 +82,12 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessDataResult<UserResponseDto>(userDto, 200, "User retrieved successfully.");
         }
 
-        public async Task<IServiceResult> UpdateUserAsync(string userId, UserForUpdateDto userForUpdateDto)
+        public async Task<IServiceResult<UserResponseDto>> UpdateUserAsync(string userId, UserForUpdateDto userForUpdateDto)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new ErrorResult(404, "User not found.");
+                return new ErrorDataResult<UserResponseDto>(default!, 404, "User not found.");
             }
 
             _mapper.Map(userForUpdateDto, user);
@@ -96,9 +96,13 @@ namespace BabsKitapEvi.Business.Services
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
-                return new ErrorResult(400, "User update failed.", errors);
+                return new ErrorDataResult<UserResponseDto>(default!, 400, errors);
             }
-            return new SuccessResult(200, "User updated successfully.");
+            
+            var roles = await _userManager.GetRolesAsync(user);
+            var updatedUserDto = _mapper.Map<UserResponseDto>(user);
+            updatedUserDto.Role = roles.FirstOrDefault() ?? "User";
+            return new SuccessDataResult<UserResponseDto>(updatedUserDto, 200, "User updated successfully.");
         }
 
     }

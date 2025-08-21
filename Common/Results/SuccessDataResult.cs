@@ -1,6 +1,6 @@
 namespace BabsKitapEvi.Common.Results
 {
-    public class SuccessDataResult<T> : SuccessResult
+    public class SuccessDataResult<T> : SuccessResult, IServiceResult<T>
     {
         public T Data { get; }
 

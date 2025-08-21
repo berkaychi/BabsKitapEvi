@@ -6,10 +6,10 @@ namespace BabsKitapEvi.Business.Interfaces
 {
     public interface ICartService
     {
-        Task<IServiceResult> GetCartByUserIdAsync(string userId);
-        Task<IServiceResult> AddItemToCartAsync(string userId, AddCartItemDto itemDto);
-        Task<IServiceResult> RemoveItemFromCartAsync(string userId, int bookId);
-        Task<IServiceResult> UpdateItemInCartAsync(string userId, int bookId, UpdateCartItemDto itemDto);
+        Task<IServiceResult<CartDto>> GetCartByUserIdAsync(string userId);
+        Task<IServiceResult<CartDto>> AddItemToCartAsync(string userId, AddCartItemDto itemDto);
+        Task<IServiceResult<CartDto>> RemoveItemFromCartAsync(string userId, int bookId);
+        Task<IServiceResult<CartDto>> UpdateItemInCartAsync(string userId, int bookId, UpdateCartItemDto itemDto);
         Task<IServiceResult> ClearCartAsync(string userId);
     }
 }

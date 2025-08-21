@@ -29,76 +29,77 @@ namespace BabsKitapEvi.Business.Services
             _bookBusinessRuleValidator = bookBusinessRuleValidator;
         }
 
-        public async Task<IServiceResult> GetAllAsync(int pageNumber, int pageSize)
+        public async Task<IServiceResult<PageResult<BookDto>>> GetAllAsync(int pageNumber, int pageSize)
         {
             if (pageNumber < 1 || pageSize < 1)
             {
-                return new ErrorResult(400, "Page number and page size must be greater than zero.");
+                return new ErrorDataResult<PageResult<BookDto>>(default!, 400, "Page number and page size must be greater than zero.");
             }
-            var books = await _context.Books
-            .AsNoTracking()
-            .Include(b => b.BookCategories!)
-                .ThenInclude(bc => bc.Category)
-            .OrderBy(b => b.Title)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+            
+            var booksQuery = _context.Books
+                .AsNoTracking()
+                .Include(b => b.BookCategories!)
+                    .ThenInclude(bc => bc.Category)
+                .OrderBy(b => b.Title);
 
-            var bookDtos = _mapper.Map<IEnumerable<BookDto>>(books);
-            return new SuccessDataResult<IEnumerable<BookDto>>(bookDtos, 200, "Books retrieved successfully.");
+            var books = await booksQuery.ToPageResultAsync(pageNumber, pageSize);
+            var bookDtos = _mapper.Map<List<BookDto>>(books.Items);
+            var pageResult = new PageResult<BookDto>(bookDtos, books.TotalCount, books.PageNumber, books.PageSize);
+            
+            return new SuccessDataResult<PageResult<BookDto>>(pageResult, 200, "Books retrieved successfully.");
         }
-        public async Task<IServiceResult> GetByCategoryIdAsync(int categoryId, int pageNumber, int pageSize)
+        public async Task<IServiceResult<PageResult<BookDto>>> GetByCategoryIdAsync(int categoryId, int pageNumber, int pageSize)
         {
             if (await _context.Categories.AnyAsync(c => c.Id == categoryId) == false)
             {
-                return new ErrorResult(404, "Category not found.");
+                return new ErrorDataResult<PageResult<BookDto>>(default!, 404, "Category not found.");
             }
 
             if (pageNumber < 1 || pageSize < 1)
             {
-                return new ErrorResult(400, "Page number and page size must be greater than zero.");
+                return new ErrorDataResult<PageResult<BookDto>>(default!, 400, "Page number and page size must be greater than zero.");
             }
 
-            var books = await _context.Books
+            var booksQuery = _context.Books
                 .AsNoTracking()
                 .Include(b => b.BookCategories!)
                     .ThenInclude(bc => bc.Category)
                 .Where(b => b.BookCategories!.Any(bc => bc.CategoryId == categoryId))
-                .OrderBy(b => b.Title)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                .OrderBy(b => b.Title);
 
-            var bookDtos = _mapper.Map<IEnumerable<BookDto>>(books);
-            return new SuccessDataResult<IEnumerable<BookDto>>(bookDtos, 200, "Books retrieved successfully.");
+            var books = await booksQuery.ToPageResultAsync(pageNumber, pageSize);
+            var bookDtos = _mapper.Map<List<BookDto>>(books.Items);
+            var pageResult = new PageResult<BookDto>(bookDtos, books.TotalCount, books.PageNumber, books.PageSize);
+            
+            return new SuccessDataResult<PageResult<BookDto>>(pageResult, 200, "Books retrieved successfully.");
         }
 
-        public async Task<IServiceResult> GetByPublisherIdAsync(int publisherId, int pageNumber, int pageSize)
+        public async Task<IServiceResult<PageResult<BookDto>>> GetByPublisherIdAsync(int publisherId, int pageNumber, int pageSize)
         {
             if (await _context.Publishers.AnyAsync(p => p.Id == publisherId) == false)
             {
-                return new ErrorResult(404, "Publisher not found.");
+                return new ErrorDataResult<PageResult<BookDto>>(default!, 404, "Publisher not found.");
             }
 
             if (pageNumber < 1 || pageSize < 1)
             {
-                return new ErrorResult(400, "Page number and page size must be greater than zero.");
+                return new ErrorDataResult<PageResult<BookDto>>(default!, 400, "Page number and page size must be greater than zero.");
             }
 
-            var books = await _context.Books
+            var booksQuery = _context.Books
                .AsNoTracking()
                .Include(b => b.BookPublishers!)
                    .ThenInclude(bc => bc.Publisher)
                .Where(b => b.BookPublishers!.Any(bc => bc.PublisherId == publisherId))
-               .OrderBy(b => b.Title)
-               .Skip((pageNumber - 1) * pageSize)
-               .Take(pageSize)
-               .ToListAsync();
+               .OrderBy(b => b.Title);
 
-            var bookDtos = _mapper.Map<IEnumerable<BookDto>>(books);
-            return new SuccessDataResult<IEnumerable<BookDto>>(bookDtos, 200, "Books retrieved successfully.");
+            var books = await booksQuery.ToPageResultAsync(pageNumber, pageSize);
+            var bookDtos = _mapper.Map<List<BookDto>>(books.Items);
+            var pageResult = new PageResult<BookDto>(bookDtos, books.TotalCount, books.PageNumber, books.PageSize);
+            
+            return new SuccessDataResult<PageResult<BookDto>>(pageResult, 200, "Books retrieved successfully.");
         }
-        public async Task<IServiceResult> GetByIdAsync(int id)
+        public async Task<IServiceResult<BookDto>> GetByIdAsync(int id)
         {
             var book = await _context.Books
                 .Include(b => b.BookCategories!)
@@ -106,7 +107,7 @@ namespace BabsKitapEvi.Business.Services
                 .FirstOrDefaultAsync(b => b.Id == id);
             if (book == null)
             {
-                return new ErrorResult(404, "Book not found.");
+                return new ErrorDataResult<BookDto>(default!, 404, "Book not found.");
             }
 
             var bookDto = _mapper.Map<BookDto>(book);
@@ -114,12 +115,12 @@ namespace BabsKitapEvi.Business.Services
         }
 
 
-        public async Task<IServiceResult> CreateAsync(CreateBookDto createBookDto, string? imageUrl = null, string? imagePublicId = null, CancellationToken ct = default)
+        public async Task<IServiceResult<BookDto>> CreateAsync(CreateBookDto createBookDto, string? imageUrl = null, string? imagePublicId = null, CancellationToken ct = default)
         {
             var validationResult = await _bookBusinessRuleValidator.Validate(createBookDto);
             if (!validationResult.IsSuccess)
             {
-                return validationResult;
+                return new ErrorDataResult<BookDto>(default!, validationResult.StatusCode, validationResult.Message!);
             }
 
             var book = _mapper.Map<Book>(createBookDto);
@@ -138,7 +139,7 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessDataResult<BookDto>(bookDto, 201, "Book created successfully.");
         }
 
-        public async Task<IServiceResult> UpdateAsync(int id, UpdateBookDto updateBookDto, CancellationToken ct = default)
+        public async Task<IServiceResult<BookDto>> UpdateAsync(int id, UpdateBookDto updateBookDto, CancellationToken ct = default)
         {
             var book = await _context.Books
                 .Include(b => b.BookCategories)
@@ -146,14 +147,14 @@ namespace BabsKitapEvi.Business.Services
 
             if (book == null)
             {
-                return new ErrorResult(404, "Book not found.");
+                return new ErrorDataResult<BookDto>(default!, 404, "Book not found.");
             }
 
             updateBookDto.Id = id;
             var validationResult = await _bookBusinessRuleValidator.Validate(updateBookDto);
             if (!validationResult.IsSuccess)
             {
-                return validationResult;
+                return new ErrorDataResult<BookDto>(default!, validationResult.StatusCode, validationResult.Message!);
             }
 
             _mapper.Map(updateBookDto, book);
@@ -166,20 +167,21 @@ namespace BabsKitapEvi.Business.Services
             book.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(ct);
-            return new SuccessResult(200, "Book updated successfully.");
+            var updatedBookDto = _mapper.Map<BookDto>(book);
+            return new SuccessDataResult<BookDto>(updatedBookDto, 200, "Book updated successfully.");
         }
 
-        public async Task<IServiceResult> UpdateImageAsync(int id, IFormFile imageFile, CancellationToken ct = default)
+        public async Task<IServiceResult<BookDto>> UpdateImageAsync(int id, IFormFile imageFile, CancellationToken ct = default)
         {
             var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id, ct);
             if (book == null)
             {
-                return new ErrorResult(404, "Book not found.");
+                return new ErrorDataResult<BookDto>(default!, 404, "Book not found.");
             }
 
             if (imageFile == null || imageFile.Length == 0)
             {
-                return new ErrorResult(400, "Image file is required.");
+                return new ErrorDataResult<BookDto>(default!, 400, "Image file is required.");
             }
 
             string? oldImagePublicId = book.ImagePublicId;
@@ -215,7 +217,8 @@ namespace BabsKitapEvi.Business.Services
                     }
                 }
 
-                return new SuccessResult(200, "Image updated successfully.");
+                var updatedBookDto = _mapper.Map<BookDto>(book);
+                return new SuccessDataResult<BookDto>(updatedBookDto, 200, "Image updated successfully.");
             }
             catch (Exception ex)
             {
@@ -230,7 +233,7 @@ namespace BabsKitapEvi.Business.Services
                         // Buraya da loglama eklenecek.
                     }
                 }
-                return new ErrorResult(500, $"Image update failed: {ex.Message}");
+                return new ErrorDataResult<BookDto>(default!, 500, $"Image update failed: {ex.Message}");
             }
         }
 
@@ -252,7 +255,7 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessResult(200, "Book deleted successfully.");
         }
 
-        public async Task<IServiceResult> SearchAsync(BooksQuery query, CancellationToken ct = default)
+        public async Task<IServiceResult<PageResult<BookDto>>> SearchAsync(BooksQuery query, CancellationToken ct = default)
         {
             var result = await _context.Books
                 .AsNoTracking()

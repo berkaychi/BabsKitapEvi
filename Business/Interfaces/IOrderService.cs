@@ -5,8 +5,8 @@ namespace BabsKitapEvi.Business.Interfaces
 {
     public interface IOrderService
     {
-        Task<IServiceResult> CreateOrderAsync(CreateOrderDto createOrderDto, string userId);
-        Task<IServiceResult> GetOrdersForUserAsync(string userId);
-        Task<IServiceResult> GetOrderByIdAsync(int orderId, string userId);
+        Task<IServiceResult<OrderDto>> CreateOrderAsync(CreateOrderDto createOrderDto, string userId);
+        Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersForUserAsync(string userId);
+        Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId);
     }
 }

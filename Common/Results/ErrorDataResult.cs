@@ -1,6 +1,6 @@
 namespace BabsKitapEvi.Common.Results
 {
-    public class ErrorDataResult<T> : ErrorResult
+    public class ErrorDataResult<T> : ErrorResult, IServiceResult<T>
     {
         public T Data { get; }
 

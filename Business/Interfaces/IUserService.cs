@@ -6,9 +6,9 @@ namespace BabsKitapEvi.Business.Interfaces
 {
     public interface IUserService
     {
-        Task<IServiceResult> GetAllUsersAsync();
-        Task<IServiceResult> GetUserByIdAsync(string userId);
-        Task<IServiceResult> UpdateUserAsync(string userId, UserForUpdateDto userForUpdateDto);
+        Task<IServiceResult<IEnumerable<UserResponseDto>>> GetAllUsersAsync();
+        Task<IServiceResult<UserResponseDto>> GetUserByIdAsync(string userId);
+        Task<IServiceResult<UserResponseDto>> UpdateUserAsync(string userId, UserForUpdateDto userForUpdateDto);
         Task<IServiceResult> DeleteUserAsync(string userId);
         Task<IServiceResult> ChangePasswordAsync(string userId, UserForChangePasswordDto userForChangePasswordDto);
     }

@@ -75,6 +75,7 @@ builder.Services.AddScoped<ICategoryService, CategoryManager>();
 builder.Services.AddScoped<ICartService, CartManager>();
 builder.Services.AddScoped<IPublisherService, PublisherManager>();
 builder.Services.AddScoped<IAddressService, AddressManager>();
+builder.Services.AddScoped<IOrderService, OrderManager>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddHttpContextAccessor();
 

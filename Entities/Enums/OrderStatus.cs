@@ -2,12 +2,12 @@ namespace BabsKitapEvi.Entities.Enums
 {
     public enum OrderStatus
     {
-        Pending,
-        Processing,
-        Shipped,
-        Delivered,
-        Cancelled,
-        Refunded,
-        PaymentFailed
+        Pending = 0,
+        Processing = 1,
+        Shipped = 2,
+        Delivered = 3,
+        Cancelled = 4,
+        Refunded = 5,
+        PaymentFailed = 6
     }
 }

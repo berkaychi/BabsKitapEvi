@@ -25,17 +25,106 @@ namespace BabsKitapEvi.Business.Services
 
         public async Task<IServiceResult<OrderDto>> CreateOrderAsync(CreateOrderDto createOrderDto, string userId)
         {
-            throw new NotImplementedException();
+            var cartResult = await _cartService.GetCartByUserIdAsync(userId);
+            if (!cartResult.IsSuccess || cartResult.Data.Items.Count == 0)
+            {
+                return new ErrorDataResult<OrderDto>(default!, 400, "Cart is empty.");
+            }
+
+            var address = await _context.Addresses
+                .FirstOrDefaultAsync(a => a.Id == createOrderDto.AddressId && a.UserId == userId);
+
+            if (address == null)
+            {
+                return new ErrorDataResult<OrderDto>(default!, 404, "Address not found.");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var order = new Order
+                {
+                    UserId = userId,
+                    TotalAmount = cartResult.Data.TotalPrice,
+                    Status = OrderStatus.Pending,
+                    ShippingFullName = address.FullName,
+                    ShippingAddress = address.StreetAddress,
+                    City = address.City,
+                    Country = address.Country,
+                    ZipCode = address.ZipCode
+                };
+
+                foreach (var cartItem in cartResult.Data.Items)
+                {
+                    var orderItem = new OrderItem
+                    {
+                        BookId = cartItem.BookId,
+                        Quantity = cartItem.Quantity,
+                        Price = cartItem.Price
+                    };
+                    order.OrderItems.Add(orderItem);
+                }
+
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                await _cartService.ClearCartAsync(userId);
+
+                await transaction.CommitAsync();
+
+                var orderDto = _mapper.Map<OrderDto>(order);
+                return new SuccessDataResult<OrderDto>(orderDto, 201, "Order created successfully.");
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return new ErrorDataResult<OrderDto>(default!, 500, "Failed to create order. Please try again.");
+            }
         }
 
-        public Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId)
+        public async Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId)
         {
-            throw new NotImplementedException();
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Book)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null)
+            {
+                return new ErrorDataResult<OrderDto>(default!, 404, "Order not found.");
+            }
+
+            var orderDto = _mapper.Map<OrderDto>(order);
+            return new SuccessDataResult<OrderDto>(orderDto, 200, "Order retrieved successfully.");
         }
 
-        public Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersForUserAsync(string userId)
+        public async Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersForUserAsync(string userId)
         {
-            throw new NotImplementedException();
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Book)
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(orders);
+            return new SuccessDataResult<IEnumerable<OrderDto>>(orderDtos, 200, "Orders retrieved successfully.");
+        }
+
+        public async Task<IServiceResult<OrderDto>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusDto updateOrderStatusDto, string userId)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null)
+            {
+                return new ErrorDataResult<OrderDto>(default!, 404, "Order not found.");
+            }
+
+            order.Status = Enum.Parse<OrderStatus>(updateOrderStatusDto.Status);
+            await _context.SaveChangesAsync();
+
+            var orderDto = _mapper.Map<OrderDto>(order);
+            return new SuccessDataResult<OrderDto>(orderDto, 200, "Order status updated successfully.");
         }
     }
 }

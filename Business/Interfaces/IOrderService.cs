@@ -8,5 +8,6 @@ namespace BabsKitapEvi.Business.Interfaces
         Task<IServiceResult<OrderDto>> CreateOrderAsync(CreateOrderDto createOrderDto, string userId);
         Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersForUserAsync(string userId);
         Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId);
+        Task<IServiceResult<OrderDto>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusDto updateOrderStatusDto, string userId);
     }
 }

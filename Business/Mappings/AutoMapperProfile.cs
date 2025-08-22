@@ -86,6 +86,8 @@ namespace BabsKitapEvi.Business.Mappings
 
             CreateMap<OrderItem, OrderItemDto>()
                 .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))
+                .ForMember(dest => dest.BookAuthor, opt => opt.MapFrom(src => src.Book.Author))
+                .ForMember(dest => dest.BookImageUrl, opt => opt.MapFrom(src => src.Book.ImageUrl))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price));
 
             CreateMap<Address, AddressDto>();

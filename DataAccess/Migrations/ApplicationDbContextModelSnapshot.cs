@@ -325,9 +325,6 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -362,8 +359,6 @@ namespace BabsKitapEvi.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
 
                     b.HasIndex("UserId");
 
@@ -639,12 +634,8 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.Order", b =>
                 {
-                    b.HasOne("BabsKitapEvi.Entities.Models.AppUser", null)
-                        .WithMany("Orders")
-                        .HasForeignKey("AppUserId");
-
                     b.HasOne("BabsKitapEvi.Entities.Models.AppUser", "User")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

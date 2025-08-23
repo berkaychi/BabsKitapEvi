@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BabsKitapEvi.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250819063629_AddOrderAndAddressEntities")]
-    partial class AddOrderAndAddressEntities
+    [Migration("20250822130051_Add_Order_And_Address_Entities_Finally")]
+    partial class Add_Order_And_Address_Entities_Finally
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -328,9 +328,6 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -365,8 +362,6 @@ namespace BabsKitapEvi.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
 
                     b.HasIndex("UserId");
 
@@ -642,12 +637,8 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.Order", b =>
                 {
-                    b.HasOne("BabsKitapEvi.Entities.Models.AppUser", null)
-                        .WithMany("Orders")
-                        .HasForeignKey("AppUserId");
-
                     b.HasOne("BabsKitapEvi.Entities.Models.AppUser", "User")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

@@ -82,7 +82,10 @@ namespace BabsKitapEvi.Business.Mappings
                 .ForMember(dest => dest.Book, opt => opt.Ignore());
 
             CreateMap<Order, OrderDto>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.ShippingCity, opt => opt.MapFrom(src => src.City))
+                .ForMember(dest => dest.ShippingCountry, opt => opt.MapFrom(src => src.Country))
+                .ForMember(dest => dest.ShippingZipCode, opt => opt.MapFrom(src => src.ZipCode));
 
             CreateMap<OrderItem, OrderItemDto>()
                 .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))

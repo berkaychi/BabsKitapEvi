@@ -70,6 +70,14 @@ namespace BabsKitapEvi.WebAPI.Controllers
             return CreateActionResult(result);
         }
 
+        [HttpPut("{id}/role")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UserForRoleUpdateDto userForRoleUpdateDto)
+        {
+            var result = await _userService.UpdateUserRoleAsync(id, userForRoleUpdateDto.Role);
+            return CreateActionResult(result);
+        }
+
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] UserForChangePasswordDto userForChangePasswordDto)
         {

@@ -76,6 +76,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
         {
             var result = await _userService.UpdateUserRoleAsync(id, userForRoleUpdateDto.Role);
             return CreateActionResult(result);
+
         }
 
         [HttpPost("change-password")]

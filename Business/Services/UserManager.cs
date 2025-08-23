@@ -98,11 +98,49 @@ namespace BabsKitapEvi.Business.Services
                 var errors = result.Errors.Select(e => e.Description).ToList();
                 return new ErrorDataResult<UserResponseDto>(default!, 400, errors);
             }
-            
+
             var roles = await _userManager.GetRolesAsync(user);
             var updatedUserDto = _mapper.Map<UserResponseDto>(user);
             updatedUserDto.Role = roles.FirstOrDefault() ?? "User";
             return new SuccessDataResult<UserResponseDto>(updatedUserDto, 200, "User updated successfully.");
+        }
+
+        public async Task<IServiceResult<UserResponseDto>> UpdateUserRoleAsync(string userId, string newRole)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new ErrorDataResult<UserResponseDto>(default!, 404, "User not found.");
+            }
+
+            var roleExists = await _roleManager.RoleExistsAsync(newRole);
+            if (!roleExists)
+            {
+                return new ErrorDataResult<UserResponseDto>(default!, 400, $"Role '{newRole}' does not exist.");
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
+                {
+                    var errors = removeResult.Errors.Select(e => e.Description).ToList();
+                    return new ErrorDataResult<UserResponseDto>(default!, 400, errors);
+                }
+            }
+
+            var addResult = await _userManager.AddToRoleAsync(user, newRole);
+            if (!addResult.Succeeded)
+            {
+                var errors = addResult.Errors.Select(e => e.Description).ToList();
+                return new ErrorDataResult<UserResponseDto>(default!, 400, errors);
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var updatedUserDto = _mapper.Map<UserResponseDto>(user);
+            updatedUserDto.Role = roles.FirstOrDefault() ?? "User";
+            return new SuccessDataResult<UserResponseDto>(updatedUserDto, 200, "User role updated successfully.");
         }
 
     }

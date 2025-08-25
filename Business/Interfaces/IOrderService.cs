@@ -9,5 +9,8 @@ namespace BabsKitapEvi.Business.Interfaces
         Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersForUserAsync(string userId);
         Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId);
         Task<IServiceResult<OrderDto>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusDto updateOrderStatusDto, string userId);
+        Task<IServiceResult<IEnumerable<OrderDto>>> GetAllOrdersAsync();
+        Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersByIdAsync(int orderId);
+        Task<IServiceResult<IEnumerable<UserOrdersDto>>> GetAllOrdersGroupedByUserAsync();
     }
 }

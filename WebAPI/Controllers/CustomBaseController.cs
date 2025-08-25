@@ -18,23 +18,52 @@ namespace BabsKitapEvi.WebAPI.Controllers
                 if (dataProperty != null)
                 {
                     var data = dataProperty.GetValue(result);
+                    var response = new
+                    {
+                        data = data,
+                        isSuccess = true,
+                        message = result.Message,
+                        errors = default(string[]?)
+                    };
+
                     if (result.StatusCode == 201)
                     {
                         var idProperty = data?.GetType().GetProperty("Id");
                         var id = idProperty?.GetValue(data);
-                        return CreatedAtAction("GetById", new { id }, data);
+                        return CreatedAtAction("GetById", new { id }, response);
                     }
 
-                    return new ObjectResult(data)
+                    return new ObjectResult(response)
                     {
                         StatusCode = result.StatusCode
                     };
                 }
-                return new StatusCodeResult(result.StatusCode);
+
+                // Data olmayan başarılı durumlar (SuccessResult)
+                var successResponse = new
+                {
+                    data = default(object?),
+                    isSuccess = true,
+                    message = result.Message,
+                    errors = default(string[]?)
+                };
+                return new ObjectResult(successResponse)
+                {
+                    StatusCode = result.StatusCode
+                };
             }
 
+            // Hata durumları
             var errorResult = result as ErrorResult;
-            return new ObjectResult(new { Errors = errorResult?.Errors })
+            var errorResponse = new
+            {
+                data = default(object?),
+                isSuccess = false,
+                message = result.Message,
+                errors = errorResult?.Errors?.ToArray() ?? new[] { result.Message ?? "An error occurred." }
+            };
+
+            return new ObjectResult(errorResponse)
             {
                 StatusCode = result.StatusCode
             };

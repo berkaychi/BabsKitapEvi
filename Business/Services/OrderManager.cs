@@ -126,5 +126,66 @@ namespace BabsKitapEvi.Business.Services
             var orderDto = _mapper.Map<OrderDto>(order);
             return new SuccessDataResult<OrderDto>(orderDto, 200, "Order status updated successfully.");
         }
+
+        public async Task<IServiceResult<IEnumerable<OrderDto>>> GetAllOrdersAsync()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Book)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(orders);
+            return new SuccessDataResult<IEnumerable<OrderDto>>(orderDtos, 200, "All orders retrieved successfully.");
+        }
+
+        public async Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersByIdAsync(int orderId)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Book)
+                .Where(o => o.Id == orderId)
+                .ToListAsync();
+
+            if (orders.Count == 0)
+            {
+                return new ErrorDataResult<IEnumerable<OrderDto>>(default!, 404, "No orders found with the given ID.");
+            }
+
+            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(orders);
+            return new SuccessDataResult<IEnumerable<OrderDto>>(orderDtos, 200, "Orders retrieved successfully.");
+        }
+
+        public async Task<IServiceResult<IEnumerable<UserOrdersDto>>> GetAllOrdersGroupedByUserAsync()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Book)
+                .Include(o => o.User)
+                .ToListAsync();
+
+            var groupedOrders = orders
+                .GroupBy(o => o.UserId)
+                .Select(g =>
+                {
+                    var user = g.First().User;
+                    var userOrders = g.OrderByDescending(o => o.OrderDate).ToList();
+                    var latestOrderDate = userOrders.First().OrderDate;
+
+                    return new UserOrdersDto
+                    {
+                        UserId = g.Key,
+                        FirstName = user?.FirstName ?? "",
+                        LastName = user?.LastName ?? "",
+                        UserEmail = user?.Email ?? "",
+                        LatestOrderDate = latestOrderDate,
+                        Orders = _mapper.Map<List<OrderDto>>(userOrders)
+                    };
+                })
+                .OrderByDescending(u => u.LatestOrderDate)
+                .ToList();
+
+            return new SuccessDataResult<IEnumerable<UserOrdersDto>>(groupedOrders, 200, "Orders grouped by user retrieved successfully.");
+        }
     }
 }

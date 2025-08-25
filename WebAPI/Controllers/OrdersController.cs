@@ -2,6 +2,7 @@ using AutoMapper.Configuration.Annotations;
 using BabsKitapEvi.Business.Interfaces;
 using BabsKitapEvi.Common.DTOs.OrderDTOs;
 using BabsKitapEvi.Common.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BabsKitapEvi.WebAPI.Controllers
@@ -40,6 +41,29 @@ namespace BabsKitapEvi.WebAPI.Controllers
         public async Task<IActionResult> UpdateOrderStatus(int id, UpdateOrderStatusDto updateOrderStatusDto)
         {
             var result = await _orderService.UpdateOrderStatusAsync(id, updateOrderStatusDto, UserId);
+            return CreateActionResult(result);
+        }
+
+        [HttpGet("all")]
+        [Authorize]
+        public async Task<IActionResult> GetAllOrders()
+        {
+            var result = await _orderService.GetAllOrdersAsync();
+            return CreateActionResult(result);
+        }
+
+        [HttpGet("grouped-by-user")]
+        [Authorize]
+        public async Task<IActionResult> GetAllOrdersGroupedByUser()
+        {
+            var result = await _orderService.GetAllOrdersGroupedByUserAsync();
+            return CreateActionResult(result);
+        }
+
+        [HttpGet("by-id/{id}")]
+        public async Task<IActionResult> GetOrdersById(int id)
+        {
+            var result = await _orderService.GetOrdersByIdAsync(id);
             return CreateActionResult(result);
         }
     }

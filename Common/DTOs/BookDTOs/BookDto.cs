@@ -1,6 +1,5 @@
 using BabsKitapEvi.Common.DTOs.CategoryDTOs;
 using BabsKitapEvi.Common.DTOs.PublisherDTOs;
-using System.Collections.Generic;
 namespace BabsKitapEvi.Common.DTOs.BookDTOs
 {
     public sealed class BookDto

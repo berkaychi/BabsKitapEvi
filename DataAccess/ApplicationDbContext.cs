@@ -33,6 +33,10 @@ namespace BabsKitapEvi.DataAccess
                 b.Property(p => p.Price).HasColumnType("decimal(18,2)");
             });
 
+            // builder.Entity<Book>()
+            //     .HasIndex(b => b.Slug)
+            //     .IsUnique();
+
             builder.Entity<BookCategory>()
                 .HasKey(bc => new { bc.BookId, bc.CategoryId });
 

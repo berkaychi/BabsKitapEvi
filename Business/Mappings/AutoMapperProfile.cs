@@ -47,7 +47,8 @@ namespace BabsKitapEvi.Business.Mappings
                 .ForMember(dest => dest.ExpiresIn, opt => opt.MapFrom(src => (long)(src.ExpiryTime - DateTime.UtcNow).TotalSeconds));
 
             CreateMap<Book, BookDto>()
-                .ForMember(dest => dest.Categories, opt => opt.MapFrom(src => src.BookCategories!.Select(bc => bc.Category)));
+                .ForMember(dest => dest.Categories, opt => opt.MapFrom(src => src.BookCategories!.Select(bc => bc.Category)))
+                .ForMember(dest => dest.Publishers, opt => opt.MapFrom(src => src.BookPublishers!.Select(bp => bp.Publisher)));
             CreateMap<CreateBookDto, Book>()
                 .ForMember(dest => dest.BookCategories, opt => opt.Ignore());
 

@@ -26,26 +26,30 @@ namespace BabsKitapEvi.WebAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var result = await _orderService.GetOrderByIdAsync(id, UserId);
+            var isAdmin = User.IsInRole("Admin");
+            var result = await _orderService.GetOrderByIdAsync(id, UserId, isAdmin);
             return CreateActionResult(result);
         }
 
-        [HttpGet]
+        [HttpGet("user")]
         public async Task<IActionResult> GetOrdersForUser()
         {
             var result = await _orderService.GetOrdersForUserAsync(UserId);
             return CreateActionResult(result);
         }
 
+
+
         [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateOrderStatus(int id, UpdateOrderStatusDto updateOrderStatusDto)
         {
-            var result = await _orderService.UpdateOrderStatusAsync(id, updateOrderStatusDto, UserId);
+            var result = await _orderService.UpdateOrderStatusAsync(id, updateOrderStatusDto, UserId, true);
             return CreateActionResult(result);
         }
 
         [HttpGet("all")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllOrders()
         {
             var result = await _orderService.GetAllOrdersAsync();
@@ -53,7 +57,7 @@ namespace BabsKitapEvi.WebAPI.Controllers
         }
 
         [HttpGet("grouped-by-user")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllOrdersGroupedByUser()
         {
             var result = await _orderService.GetAllOrdersGroupedByUserAsync();
@@ -61,9 +65,17 @@ namespace BabsKitapEvi.WebAPI.Controllers
         }
 
         [HttpGet("by-id/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetOrdersById(int id)
         {
             var result = await _orderService.GetOrdersByIdAsync(id);
+            return CreateActionResult(result);
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] OrdersQuery query, CancellationToken ct)
+        {
+            var result = await _orderService.SearchOrdersAsync(query, ct);
             return CreateActionResult(result);
         }
     }

@@ -138,5 +138,21 @@ namespace BabsKitapEvi.WebAPI.Controllers
             var result = await _bookService.SearchAsync(query, ct);
             return CreateActionResult(result);
         }
+
+        [HttpPut("{id}/publisher")]
+        [Authorize(Roles = Roles.Admin)]
+        public async Task<IActionResult> UpdatePublisher(int id, [FromBody] UpdateBookPublisherDto updateBookPublisherDto, CancellationToken ct)
+        {
+            var result = await _bookService.UpdateBookPublisherAsync(id, updateBookPublisherDto, ct);
+            return CreateActionResult(result);
+        }
+
+        [HttpPut("{id}/categories")]
+        [Authorize(Roles = Roles.Admin)]
+        public async Task<IActionResult> UpdateCategories(int id, [FromBody] UpdateBookCategoryDto updateBookCategoryDto, CancellationToken ct)
+        {
+            var result = await _bookService.UpdateBookCategoryAsync(id, updateBookCategoryDto, ct);
+            return CreateActionResult(result);
+        }
     }
 }

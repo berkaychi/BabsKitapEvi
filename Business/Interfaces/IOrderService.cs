@@ -1,4 +1,5 @@
 using BabsKitapEvi.Common.DTOs.OrderDTOs;
+using BabsKitapEvi.Common.DTOs.Shared;
 using BabsKitapEvi.Common.Results;
 
 namespace BabsKitapEvi.Business.Interfaces
@@ -7,10 +8,11 @@ namespace BabsKitapEvi.Business.Interfaces
     {
         Task<IServiceResult<OrderDto>> CreateOrderAsync(CreateOrderDto createOrderDto, string userId);
         Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersForUserAsync(string userId);
-        Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId);
-        Task<IServiceResult<OrderDto>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusDto updateOrderStatusDto, string userId);
+        Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId, bool isAdmin = false);
+        Task<IServiceResult<OrderDto>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusDto updateOrderStatusDto, string userId, bool isAdmin = false);
         Task<IServiceResult<IEnumerable<OrderDto>>> GetAllOrdersAsync();
         Task<IServiceResult<IEnumerable<OrderDto>>> GetOrdersByIdAsync(int orderId);
         Task<IServiceResult<IEnumerable<UserOrdersDto>>> GetAllOrdersGroupedByUserAsync();
+        Task<IServiceResult<PageResult<OrderDto>>> SearchOrdersAsync(OrdersQuery query, CancellationToken ct = default);
     }
 }

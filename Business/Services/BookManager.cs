@@ -35,17 +35,19 @@ namespace BabsKitapEvi.Business.Services
             {
                 return new ErrorDataResult<PageResult<BookDto>>(default!, 400, "Page number and page size must be greater than zero.");
             }
-            
+
             var booksQuery = _context.Books
                 .AsNoTracking()
                 .Include(b => b.BookCategories!)
                     .ThenInclude(bc => bc.Category)
+                .Include(b => b.BookPublishers!)
+                    .ThenInclude(bp => bp.Publisher)
                 .OrderBy(b => b.Title);
 
             var books = await booksQuery.ToPageResultAsync(pageNumber, pageSize);
             var bookDtos = _mapper.Map<List<BookDto>>(books.Items);
             var pageResult = new PageResult<BookDto>(bookDtos, books.TotalCount, books.PageNumber, books.PageSize);
-            
+
             return new SuccessDataResult<PageResult<BookDto>>(pageResult, 200, "Books retrieved successfully.");
         }
         public async Task<IServiceResult<PageResult<BookDto>>> GetByCategoryIdAsync(int categoryId, int pageNumber, int pageSize)
@@ -70,7 +72,7 @@ namespace BabsKitapEvi.Business.Services
             var books = await booksQuery.ToPageResultAsync(pageNumber, pageSize);
             var bookDtos = _mapper.Map<List<BookDto>>(books.Items);
             var pageResult = new PageResult<BookDto>(bookDtos, books.TotalCount, books.PageNumber, books.PageSize);
-            
+
             return new SuccessDataResult<PageResult<BookDto>>(pageResult, 200, "Books retrieved successfully.");
         }
 
@@ -96,7 +98,7 @@ namespace BabsKitapEvi.Business.Services
             var books = await booksQuery.ToPageResultAsync(pageNumber, pageSize);
             var bookDtos = _mapper.Map<List<BookDto>>(books.Items);
             var pageResult = new PageResult<BookDto>(bookDtos, books.TotalCount, books.PageNumber, books.PageSize);
-            
+
             return new SuccessDataResult<PageResult<BookDto>>(pageResult, 200, "Books retrieved successfully.");
         }
         public async Task<IServiceResult<BookDto>> GetByIdAsync(int id)
@@ -104,6 +106,8 @@ namespace BabsKitapEvi.Business.Services
             var book = await _context.Books
                 .Include(b => b.BookCategories!)
                     .ThenInclude(bc => bc.Category)
+                .Include(b => b.BookPublishers!)
+                    .ThenInclude(bp => bp.Publisher)
                 .FirstOrDefaultAsync(b => b.Id == id);
             if (book == null)
             {
@@ -169,6 +173,48 @@ namespace BabsKitapEvi.Business.Services
             await _context.SaveChangesAsync(ct);
             var updatedBookDto = _mapper.Map<BookDto>(book);
             return new SuccessDataResult<BookDto>(updatedBookDto, 200, "Book updated successfully.");
+        }
+
+        public async Task<IServiceResult<BookDto>> UpdateBookPublisherAsync(int id, UpdateBookPublisherDto updateBookPublisherDto, CancellationToken ct = default)
+        {
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id, ct);
+            if (book == null)
+            {
+                return new ErrorDataResult<BookDto>(default!, 404, "Book not found.");
+            }
+
+            book.BookPublishers = updateBookPublisherDto.PublisherIds.Select(publisherId => new BookPublisher
+            {
+                PublisherId = publisherId
+            }).ToList();
+
+            book.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync(ct);
+            var updatedBookDto = _mapper.Map<BookDto>(book);
+            return new SuccessDataResult<BookDto>(updatedBookDto, 200, "Book publisher updated successfully.");
+        }
+
+        public async Task<IServiceResult<BookDto>> UpdateBookCategoryAsync(int id, UpdateBookCategoryDto updateBookCategoryDto, CancellationToken ct = default)
+        {
+            var book = await _context.Books
+                .Include(b => b.BookCategories)
+                .FirstOrDefaultAsync(b => b.Id == id, ct);
+
+            if (book == null)
+            {
+                return new ErrorDataResult<BookDto>(default!, 404, "Book not found.");
+            }
+
+            book.BookCategories = updateBookCategoryDto.CategoryIds.Select(categoryId => new BookCategory
+            {
+                CategoryId = categoryId
+            }).ToList();
+            book.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync(ct);
+            var updatedBookDto = _mapper.Map<BookDto>(book);
+            return new SuccessDataResult<BookDto>(updatedBookDto, 200, "Book categories updated successfully.");
         }
 
         public async Task<IServiceResult<BookDto>> UpdateImageAsync(int id, IFormFile imageFile, CancellationToken ct = default)
@@ -282,6 +328,5 @@ namespace BabsKitapEvi.Business.Services
                 }
             }
         }
-
     }
 }

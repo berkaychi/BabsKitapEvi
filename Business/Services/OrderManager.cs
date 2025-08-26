@@ -1,7 +1,9 @@
 using System.IO.Compression;
 using AutoMapper;
 using BabsKitapEvi.Business.Interfaces;
+using BabsKitapEvi.Business.Extensions;
 using BabsKitapEvi.Common.DTOs.OrderDTOs;
+using BabsKitapEvi.Common.DTOs.Shared;
 using BabsKitapEvi.Common.Results;
 using BabsKitapEvi.DataAccess;
 using BabsKitapEvi.Entities.Enums;
@@ -69,6 +71,15 @@ namespace BabsKitapEvi.Business.Services
                 await _context.SaveChangesAsync();
 
                 await _cartService.ClearCartAsync(userId);
+                _context.Books
+                    .Where(b => cartResult.Data.Items.Select(i => i.BookId).Contains(b.Id))
+                    .ToList()
+                    .ForEach(b =>
+                    {
+                        var item = cartResult.Data.Items.First(i => i.BookId == b.Id);
+                        b.StockQuantity -= item.Quantity;
+                    });
+                await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
 
@@ -82,12 +93,19 @@ namespace BabsKitapEvi.Business.Services
             }
         }
 
-        public async Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId)
+        public async Task<IServiceResult<OrderDto>> GetOrderByIdAsync(int orderId, string userId, bool isAdmin = false)
         {
-            var order = await _context.Orders
+            var orderQuery = _context.Orders
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Book)
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+                .Where(o => o.Id == orderId);
+
+            if (!isAdmin)
+            {
+                orderQuery = orderQuery.Where(o => o.UserId == userId);
+            }
+
+            var order = await orderQuery.FirstOrDefaultAsync();
 
             if (order == null)
             {
@@ -111,9 +129,16 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessDataResult<IEnumerable<OrderDto>>(orderDtos, 200, "Orders retrieved successfully.");
         }
 
-        public async Task<IServiceResult<OrderDto>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusDto updateOrderStatusDto, string userId)
+        public async Task<IServiceResult<OrderDto>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusDto updateOrderStatusDto, string userId, bool isAdmin = false)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+            var orderQuery = _context.Orders.Where(o => o.Id == orderId);
+
+            if (!isAdmin)
+            {
+                orderQuery = orderQuery.Where(o => o.UserId == userId);
+            }
+
+            var order = await orderQuery.FirstOrDefaultAsync();
 
             if (order == null)
             {
@@ -186,6 +211,26 @@ namespace BabsKitapEvi.Business.Services
                 .ToList();
 
             return new SuccessDataResult<IEnumerable<UserOrdersDto>>(groupedOrders, 200, "Orders grouped by user retrieved successfully.");
+        }
+
+        public async Task<IServiceResult<PageResult<OrderDto>>> SearchOrdersAsync(OrdersQuery query, CancellationToken ct = default)
+        {
+            var ordersQuery = _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Book)
+                .Include(o => o.User)
+                .AsQueryable();
+
+            ordersQuery = ordersQuery
+                .ApplyFilters(query)
+                .ApplySorting(query.SortBy, query.SortDirection);
+
+            var pageResult = await ordersQuery.ToPageResultAsync(query.PageNumber, query.PageSize, ct);
+
+            var orderDtos = _mapper.Map<List<OrderDto>>(pageResult.Items);
+
+            var result = new PageResult<OrderDto>(orderDtos, pageResult.TotalCount, pageResult.PageNumber, pageResult.PageSize);
+            return new SuccessDataResult<PageResult<OrderDto>>(result, 200, "Orders retrieved successfully.");
         }
     }
 }

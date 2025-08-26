@@ -23,7 +23,6 @@ namespace BabsKitapEvi.Business.Extensions
                 query = query.Where(b =>
                     b.Title.Contains(term) ||
                     b.Author.Contains(term));
-                // || (b.Description != null && b.Description.Contains(term)));
             }
 
             if (filters.CategoryId.HasValue)

@@ -4,6 +4,7 @@ using BabsKitapEvi.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BabsKitapEvi.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250826200212_AddSlugToBooks")]
+    partial class AddSlugToBooks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,7 +72,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.AppRole", b =>
@@ -225,7 +228,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Books", (string)null);
+                    b.ToTable("Books");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.BookCategory", b =>
@@ -240,7 +243,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("BookCategories", (string)null);
+                    b.ToTable("BookCategories");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.BookPublisher", b =>
@@ -255,7 +258,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasIndex("PublisherId");
 
-                    b.ToTable("BookPublishers", (string)null);
+                    b.ToTable("BookPublishers");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.Cart", b =>
@@ -275,7 +278,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Carts", (string)null);
+                    b.ToTable("Carts");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.CartItem", b =>
@@ -301,7 +304,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasIndex("CartId");
 
-                    b.ToTable("CartItems", (string)null);
+                    b.ToTable("CartItems");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.Category", b =>
@@ -318,7 +321,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.Order", b =>
@@ -366,7 +369,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.OrderItem", b =>
@@ -395,7 +398,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItems", (string)null);
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.Publisher", b =>
@@ -412,7 +415,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Publishers", (string)null);
+                    b.ToTable("Publishers");
                 });
 
             modelBuilder.Entity("BabsKitapEvi.Entities.Models.UserRefreshToken", b =>
@@ -438,7 +441,7 @@ namespace BabsKitapEvi.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserRefreshTokens", (string)null);
+                    b.ToTable("UserRefreshTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -12,6 +12,7 @@ namespace BabsKitapEvi.Business.Interfaces
         Task<IServiceResult<PageResult<BookDto>>> GetByCategoryIdAsync(int categoryId, int pageNumber, int pageSize);
         Task<IServiceResult<PageResult<BookDto>>> GetByPublisherIdAsync(int publisherId, int pageNumber, int pageSize);
         Task<IServiceResult<BookDto>> GetByIdAsync(int id);
+        Task<IServiceResult<BookDto>> GetBySlugAsync(string slug);
         Task<IServiceResult<BookDto>> CreateAsync(CreateBookDto createBookDto, string? imageUrl = null, string? imagePublicId = null, CancellationToken ct = default);
         Task<IServiceResult<BookDto>> UpdateAsync(int id, UpdateBookDto updateBookDto, CancellationToken ct = default);
         Task<IServiceResult<BookDto>> UpdateImageAsync(int id, IFormFile imageFile, CancellationToken ct = default);

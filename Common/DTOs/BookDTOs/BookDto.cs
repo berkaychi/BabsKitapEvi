@@ -7,6 +7,7 @@ namespace BabsKitapEvi.Common.DTOs.BookDTOs
         public int Id { get; set; }
         public string Title { get; set; } = null!;
         public string Author { get; set; } = null!;
+        public string Slug { get; set; } = null!;
         public string ISBN { get; set; } = null!;
         public DateTime PublishedDate { get; set; }
         public string? Description { get; set; }

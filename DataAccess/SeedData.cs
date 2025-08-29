@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace BabsKitapEvi.DataAccess
 {
@@ -23,6 +24,7 @@ namespace BabsKitapEvi.DataAccess
             await SeedRolesAsync(roleManager);
             await SeedAdminUserAsync(userManager);
             await SeedCategoriesAndBooksAsync(context);
+            await UpdateExistingBooksWithSlugsAsync(context);
         }
 
         private static async Task SeedRolesAsync(RoleManager<AppRole> roleManager)
@@ -145,6 +147,97 @@ namespace BabsKitapEvi.DataAccess
 
             await context.Books.AddRangeAsync(booksToAdd);
             await context.SaveChangesAsync();
+        }
+
+        private static async Task UpdateExistingBooksWithSlugsAsync(ApplicationDbContext context)
+        {
+            var booksWithoutSlug = await context.Books
+                .Where(b => string.IsNullOrEmpty(b.Slug))
+                .ToListAsync();
+
+            foreach (var book in booksWithoutSlug)
+            {
+                var baseSlug = GenerateSlug(book.Title, book.Author);
+
+                var finalSlug = await GenerateUniqueSlugAsync(context, baseSlug, book.Id);
+                book.Slug = finalSlug;
+
+                Console.WriteLine($"Updated book '{book.Title}' with slug: {book.Slug}");
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        private static string GenerateSlug(string title, string author)
+        {
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(author))
+                return GenerateSlug(title ?? author ?? "");
+
+            var combinedTitle = $"{title.Trim()} {author.Trim()}";
+
+            var normalized = NormalizeTurkishCharacters(combinedTitle);
+
+            normalized = normalized.ToLowerInvariant();
+
+            normalized = Regex.Replace(normalized, @"[^a-z0-9\s-]", "");
+
+            normalized = Regex.Replace(normalized, @"\s+", " ").Trim();
+
+            normalized = normalized.Replace(" ", "-");
+
+            normalized = Regex.Replace(normalized, @"-+", "-");
+
+            normalized = normalized.Trim('-');
+
+            return normalized;
+        }
+
+        private static string GenerateSlug(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                return string.Empty;
+
+            var normalized = NormalizeTurkishCharacters(title);
+
+            normalized = normalized.ToLowerInvariant();
+
+            normalized = Regex.Replace(normalized, @"[^a-z0-9\s-]", "");
+
+            normalized = Regex.Replace(normalized, @"\s+", " ").Trim();
+
+            normalized = normalized.Replace(" ", "-");
+
+            normalized = Regex.Replace(normalized, @"-+", "-");
+
+            normalized = normalized.Trim('-');
+
+            return normalized;
+        }
+
+        private static async Task<string> GenerateUniqueSlugAsync(ApplicationDbContext context, string baseSlug, int bookId)
+        {
+            var slug = baseSlug;
+            var counter = 1;
+
+            while (await context.Books.AnyAsync(b =>
+                b.Slug == slug && b.Id != bookId))
+            {
+                slug = $"{baseSlug}-{counter}";
+                counter++;
+            }
+
+            return slug;
+        }
+
+        private static string NormalizeTurkishCharacters(string text)
+        {
+            return text
+                .Replace('ç', 'c').Replace('Ç', 'c')
+                .Replace('ğ', 'g').Replace('Ğ', 'g')
+                .Replace('ı', 'i').Replace('İ', 'i')
+                .Replace('ö', 'o').Replace('Ö', 'o')
+                .Replace('ş', 's').Replace('Ş', 's')
+                .Replace('ü', 'u').Replace('Ü', 'u');
         }
     }
 }

@@ -60,6 +60,14 @@ namespace BabsKitapEvi.WebAPI.Controllers
             return CreateActionResult(result);
         }
 
+        [HttpGet("slug/{slug}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetBySlug(string slug)
+        {
+            var result = await _bookService.GetBySlugAsync(slug);
+            return CreateActionResult(result);
+        }
+
         [HttpPost]
         [Authorize(Roles = Roles.Admin)]
         [Consumes("multipart/form-data")]

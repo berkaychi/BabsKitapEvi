@@ -54,6 +54,7 @@ namespace BabsKitapEvi.Business.Mappings
 
             CreateMap<UpdateBookDto, Book>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Slug, opt => opt.Ignore()) // Slug'ı update'de ignore et
                 .ForAllMembers(options => options.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<Category, CategoryDto>();

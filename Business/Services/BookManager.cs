@@ -11,6 +11,7 @@ using BabsKitapEvi.Common.DTOs.Shared;
 using System.Data.Common;
 using BabsKitapEvi.Business.Extensions;
 using AutoMapper.QueryableExtensions;
+using BabsKitapEvi.Business.Utilities;
 
 namespace BabsKitapEvi.Business.Services
 {
@@ -118,6 +119,29 @@ namespace BabsKitapEvi.Business.Services
             return new SuccessDataResult<BookDto>(bookDto, 200, "Book retrieved successfully.");
         }
 
+        public async Task<IServiceResult<BookDto>> GetBySlugAsync(string slug)
+        {
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                return new ErrorDataResult<BookDto>(default!, 400, "Slug cannot be empty.");
+            }
+
+            var book = await _context.Books
+                .Include(b => b.BookCategories!)
+                    .ThenInclude(bc => bc.Category)
+                .Include(b => b.BookPublishers!)
+                    .ThenInclude(bp => bp.Publisher)
+                .FirstOrDefaultAsync(b => b.Slug == slug);
+
+            if (book == null)
+            {
+                return new ErrorDataResult<BookDto>(default!, 404, "Book not found.");
+            }
+
+            var bookDto = _mapper.Map<BookDto>(book);
+            return new SuccessDataResult<BookDto>(bookDto, 200, "Book retrieved successfully.");
+        }
+
 
         public async Task<IServiceResult<BookDto>> CreateAsync(CreateBookDto createBookDto, string? imageUrl = null, string? imagePublicId = null, CancellationToken ct = default)
         {
@@ -131,6 +155,11 @@ namespace BabsKitapEvi.Business.Services
             book.ImageUrl = imageUrl;
             book.ImagePublicId = imagePublicId;
             book.BookCategories = new List<BookCategory>();
+
+            book.Slug = await GenerateUniqueSlugAsync(
+                createBookDto.Title,
+                createBookDto.Author,
+                ct);
 
             if (createBookDto.CategoryIds != null && createBookDto.CategoryIds.Any())
             {
@@ -159,6 +188,14 @@ namespace BabsKitapEvi.Business.Services
             if (!validationResult.IsSuccess)
             {
                 return new ErrorDataResult<BookDto>(default!, validationResult.StatusCode, validationResult.Message!);
+            }
+
+            if ((!string.IsNullOrEmpty(updateBookDto.Title) && updateBookDto.Title != book.Title) ||
+                (!string.IsNullOrEmpty(updateBookDto.Author) && updateBookDto.Author != book.Author))
+            {
+                var newTitle = updateBookDto.Title ?? book.Title;
+                var newAuthor = updateBookDto.Author ?? book.Author;
+                book.Slug = await GenerateUniqueSlugAsync(newTitle, newAuthor, ct, book.Id);
             }
 
             _mapper.Map(updateBookDto, book);
@@ -327,6 +364,28 @@ namespace BabsKitapEvi.Business.Services
                     book.BookCategories.Add(new BookCategory { Category = category });
                 }
             }
+        }
+
+        private async Task<string> GenerateUniqueSlugAsync(string title, string author, CancellationToken ct, int? excludeBookId = null)
+        {
+            var baseSlug = SlugGenerator.GenerateSlug(title, author);
+
+            if (string.IsNullOrEmpty(baseSlug))
+            {
+                baseSlug = Guid.NewGuid().ToString("N").Substring(0, 8);
+            }
+
+            var slug = baseSlug;
+            var counter = 1;
+
+            while (await _context.Books.AnyAsync(b =>
+                b.Slug == slug && (excludeBookId == null || b.Id != excludeBookId), ct))
+            {
+                slug = $"{baseSlug}-{counter}";
+                counter++;
+            }
+
+            return slug;
         }
     }
 }

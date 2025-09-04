@@ -37,7 +37,7 @@ A comprehensive book store management system built with .NET 9 and Angular. This
 
 ## 🏗️ Architecture
 
-This project follows **Clean Architecture** principles with clear separation of concerns:
+This project follows **N-Layer Architecture** with clear separation of concerns:
 
 ```
 ├── Entities/           # Domain entities and models
@@ -188,5 +188,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Built with modern .NET technologies
-- Follows industry best practices and design patterns
+- Follows N-Layer Architecture principles and design patterns
 - Designed for scalability and maintainability
